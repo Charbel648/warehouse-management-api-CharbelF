@@ -22,6 +22,7 @@ public class Products
     public bool IsArchived  { get; set; }
     public DateTime Created_at   { get; set; }
     public DateTime Last_Updated_at { get; set; }
+    public string SupplierId { get; set; } = string.Empty;
     
     // public Products(string Id, string Name, string SKU, string Description, double Price, int QuantityInStock,string supplierName, DateTime ExpiryDate, DateTime Created_at, DateTime Last_Updated_at)
     // {
