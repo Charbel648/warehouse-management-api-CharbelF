@@ -333,4 +333,54 @@ public class ProductsController : ControllerBase
         return await Task.FromResult(Ok(result));
     }
     
+    [HttpPost("{id}/assign-supplier/{supplierId}")]
+    public async Task<ActionResult> AssignSupplierToProduct(
+        [FromRoute] string id,
+        [FromRoute] string supplierId)
+    {
+        if (!Guid.TryParse(id, out _))
+        {
+            return BadRequest("Invalid product id");
+        }
+
+        if (!Guid.TryParse(supplierId, out _))
+        {
+            return BadRequest("Invalid supplier id");
+        }
+
+        Products? product = await Task.FromResult(
+            FakeWarehouseStore.DummyProducts.FirstOrDefault(p => p.Id == id)
+        );
+
+        if (product == null)
+        {
+            return NotFound("Product not found");
+        }
+
+        Supplier? supplier = await Task.FromResult(
+            FakeWarehouseStore.DummySuppliers.FirstOrDefault(s => s.Id == supplierId)
+        );
+
+        if (supplier == null)
+        {
+            return NotFound("Supplier not found");
+        }
+
+        if (product.IsArchived)
+        {
+            return BadRequest("Archived products cannot be assigned to a supplier");
+        }
+
+        if (!supplier.IsActive)
+        {
+            return BadRequest("Inactive suppliers cannot be assigned");
+        }
+
+        product.SupplierId = supplier.Id;
+        product.SupplierName = supplier.Name;
+        product.Last_Updated_at = DateTime.UtcNow;
+
+        return Ok(product);
+    }
+    
 }
