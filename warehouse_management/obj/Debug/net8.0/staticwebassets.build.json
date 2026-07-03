@@ -1,0 +1,19 @@
+{
+  "Version": 1,
+  "Hash": "yLZohOheMaC5wQ3yv9x/tozkQZTiFtLUnsNY8Ten7QE=",
+  "Source": "warehouse_management",
+  "BasePath": "_content/warehouse_management",
+  "Mode": "Default",
+  "ManifestType": "Build",
+  "ReferencedProjectsConfiguration": [],
+  "DiscoveryPatterns": [
+    {
+      "Name": "warehouse_management\\wwwroot",
+      "Source": "warehouse_management",
+      "ContentRoot": "C:\\Users\\charb\\Desktop\\warehouse-management-api-CharbelF\\warehouse_management\\wwwroot\\",
+      "BasePath": "_content/warehouse_management",
+      "Pattern": "**"
+    }
+  ],
+  "Assets": []
+}
