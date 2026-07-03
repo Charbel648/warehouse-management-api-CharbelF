@@ -16,6 +16,7 @@ public class SuppliersController : ControllerBase
         _supplierService = supplierService;
     }
 
+    //this endpoint let you get all the suppliers
     [HttpGet]
     public async Task<ActionResult> GetSuppliers()
     {
@@ -24,6 +25,7 @@ public class SuppliersController : ControllerBase
         return Ok(suppliers);
     }
 
+    //this endpoint let you get the supplier by id
     [HttpGet("{id}")]
     public async Task<ActionResult> GetSupplierById([FromRoute] string id)
     {
@@ -42,6 +44,7 @@ public class SuppliersController : ControllerBase
         return Ok(supplier);
     }
 
+    //this endpoint let you create a new supplier
     [HttpPost]
     public async Task<ActionResult> CreateSupplier([FromBody] CreateSupplierRequest request)
     {
@@ -50,6 +53,7 @@ public class SuppliersController : ControllerBase
         return CreatedAtAction(nameof(GetSupplierById), new { id = supplier.Id }, supplier);
     }
 
+    //this endpoint let you delete any supplier by id
     [HttpDelete("{id}")]
     public async Task<ActionResult> DeactivateSupplier([FromRoute] string id)
     {

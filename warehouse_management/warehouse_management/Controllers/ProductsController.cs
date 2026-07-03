@@ -333,6 +333,7 @@ public class ProductsController : ControllerBase
         return await Task.FromResult(Ok(result));
     }
     
+    //this endpoint gives the ability to assign a supplier to a product (Creates a Product-Supplier Link)
     [HttpPost("{id}/assign-supplier/{supplierId}")]
     public async Task<ActionResult> AssignSupplierToProduct(
         [FromRoute] string id,
