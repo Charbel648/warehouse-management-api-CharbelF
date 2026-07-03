@@ -152,4 +152,35 @@ public class FakeWarehouseStore
     };
     
     public static List<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
+    
+    public static List<Supplier> DummySuppliers { get; set; } = new List<Supplier>
+    {
+        new Supplier
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Dell Supplier",
+            Country = "USA",
+            ContactEmail = "contact@dell.com",
+            PhoneNumber = "+1 555 111 222",
+            IsActive = true
+        },
+        new Supplier
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Logitech Supplier",
+            Country = "Switzerland",
+            ContactEmail = "contact@logitech.com",
+            PhoneNumber = "+41 555 333 444",
+            IsActive = true
+        },
+        new Supplier
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = "Samsung Supplier",
+            Country = "South Korea",
+            ContactEmail = "contact@samsung.com",
+            PhoneNumber = "+82 555 555 666",
+            IsActive = true
+        }
+    };
 }
