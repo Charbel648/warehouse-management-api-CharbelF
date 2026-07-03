@@ -23,17 +23,17 @@ public class Products
     public DateTime Created_at   { get; set; }
     public DateTime Last_Updated_at { get; set; }
     
-    public Products(string Id, string Name, string SKU, string Description, double Price, int QuantityInStock,string supplierName, DateTime ExpiryDate, DateTime Created_at, DateTime Last_Updated_at)
-    {
-        Id = this.Id;
-        Name = this.Name;
-        Description = this.Description;
-        SKU = this.SKU;
-        Price = this.Price;
-        QuantityInStock = this.QuantityInStock;
-        supplierName = this.SupplierName;
-        Created_at = this.Created_at;
-        Last_Updated_at = this.Last_Updated_at;
-        IsArchived = false;
-    }
+    // public Products(string Id, string Name, string SKU, string Description, double Price, int QuantityInStock,string supplierName, DateTime ExpiryDate, DateTime Created_at, DateTime Last_Updated_at)
+    // {
+    //     Id = this.Id;
+    //     Name = this.Name;
+    //     Description = this.Description;
+    //     SKU = this.SKU;
+    //     Price = this.Price;
+    //     QuantityInStock = this.QuantityInStock;
+    //     supplierName = this.SupplierName;
+    //     Created_at = this.Created_at;
+    //     Last_Updated_at = this.Last_Updated_at;
+    //     IsArchived = false;
+    // }
 }

@@ -1,4 +1,4 @@
-namespace warehouse_management;
+namespace warehouse_management.Data;
 using warehouse_management.Models;
 
 public class FakeWarehouseStore
@@ -150,5 +150,6 @@ public class FakeWarehouseStore
             Last_Updated_at = DateTime.UtcNow
         }
     };
-
+    
+    public static List<ProductImage> ProductImages { get; set; } = new List<ProductImage>();
 }
