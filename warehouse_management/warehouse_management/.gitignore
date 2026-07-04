@@ -1,10 +1,82 @@
+# =========================
+# .NET / C# build outputs
+# =========================
 bin/
 obj/
-.idea/
-.vs/
-*.user
-*.suo
+[Bb]in/
+[Oo]bj/
+
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Aa][Rr][Mm]/
+[Aa][Rr][Mm]64/
+
+# .NET generated files
+*.dll
+*.exe
+*.pdb
 *.cache
+*.deps.json
+*.runtimeconfig.json
+*.user
+*.rsuser
+*.suo
+*.userosscache
+*.sln.docstates
+
+# NuGet
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.assets.json
+*.nuget.props
+*.nuget.targets
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# Visual Studio
+.vs/
+*.VC.db
+*.VC.VC.opendb
+
+# VS Code
+.vscode/
+
+# Logs
 *.log
+logs/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Environment / secrets
+.env
+.env.*
+appsettings.Production.json
+appsettings.Local.json
+secrets.json
+
+# Uploaded product images
 wwwroot/uploads/*
 !wwwroot/uploads/.gitkeep
+
+# Temporary files
+*.tmp
+*.temp
+*.bak
+*.swp
+
+# Test results / coverage
+TestResults/
+coverage/
+coverage.xml
+*.coverage
+*.coveragexml
