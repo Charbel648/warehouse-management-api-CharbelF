@@ -1,4 +1,4 @@
-using Warehouse.Domain.Models;
+﻿using Warehouse.Domain.Models;
 
 namespace Warehouse.Domain.Repositories;
 

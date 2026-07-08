@@ -1,10 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Warehouse.Application.Suppliers.Queries.GetSupplierById;
 
-namespace Warehouse.Presentation.Contracts;
-
-public class CreateSupplierRequest
+public class GetSupplierByIdResponse
 {
-    [Required]
+    public string Id { get; set; } = string.Empty;
+
     public string Name { get; set; } = string.Empty;
 
     public string Country { get; set; } = string.Empty;
@@ -12,4 +11,6 @@ public class CreateSupplierRequest
     public string ContactEmail { get; set; } = string.Empty;
 
     public string PhoneNumber { get; set; } = string.Empty;
+
+    public bool IsActive { get; set; }
 }

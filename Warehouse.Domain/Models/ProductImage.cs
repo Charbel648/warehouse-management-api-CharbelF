@@ -1,4 +1,4 @@
-namespace Warehouse.Domain.Models;
+﻿namespace Warehouse.Domain.Models;
 
 public class ProductImage
 {

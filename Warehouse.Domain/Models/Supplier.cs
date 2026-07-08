@@ -1,4 +1,4 @@
-namespace Warehouse.Domain.Models;
+﻿namespace Warehouse.Domain.Models;
 
 public class Supplier
 {
@@ -21,9 +21,7 @@ public class Supplier
         string phoneNumber)
     {
         if (string.IsNullOrWhiteSpace(name))
-        {
             throw new ArgumentException("Supplier name is required");
-        }
 
         Name = name;
         Country = country;

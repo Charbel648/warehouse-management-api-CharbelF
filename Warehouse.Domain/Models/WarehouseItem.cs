@@ -1,4 +1,4 @@
-namespace Warehouse.Domain.Models;
+﻿namespace Warehouse.Domain.Models;
 
 public class WarehouseItem
 {
@@ -16,9 +16,7 @@ public class WarehouseItem
         int quantity)
     {
         if (quantity < 0)
-        {
             throw new ArgumentException("Quantity cannot be negative");
-        }
 
         ProductId = productId;
         LocationCode = locationCode;

@@ -1,13 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿namespace Warehouse.Application.Products.Queries.ListProducts;
 
-namespace Warehouse.Presentation.Contracts;
-
-public class CreateProductRequest
+public class ListProductsResponse
 {
-    [Required]
+    public string Id { get; set; } = string.Empty;
+
     public string Name { get; set; } = string.Empty;
 
-    [Required]
     public string SKU { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;
@@ -18,5 +16,7 @@ public class CreateProductRequest
 
     public string SupplierName { get; set; } = string.Empty;
 
-    public DateTime ExpiryDate { get; set; }
+    public bool IsArchived { get; set; }
+
+    public DateTime CreatedAt { get; set; }
 }

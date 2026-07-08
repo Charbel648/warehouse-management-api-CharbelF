@@ -1,7 +1,4 @@
-using Warehouse.Application.Products.Commands;
-using Warehouse.Application.Products.Queries;
-using Warehouse.Application.Suppliers.Commands;
-using Warehouse.Application.Suppliers.Queries;
+﻿using Warehouse.Application.Products.Commands.CreateProduct;
 using Warehouse.Domain.Repositories;
 using Warehouse.Infrastructure.Repositories;
 
@@ -15,20 +12,10 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<IProductRepository, ProductRepository>();
 builder.Services.AddSingleton<ISupplierRepository, SupplierRepository>();
 
-builder.Services.AddScoped<ListProducts>();
-builder.Services.AddScoped<GetProductById>();
-builder.Services.AddScoped<SearchProducts>();
-builder.Services.AddScoped<CreateProduct>();
-builder.Services.AddScoped<UpdateProductQuantity>();
-builder.Services.AddScoped<UpdateProductPrice>();
-builder.Services.AddScoped<ArchiveProduct>();
-builder.Services.AddScoped<AssignSupplierToProduct>();
-builder.Services.AddScoped<AddProductImage>();
-
-builder.Services.AddScoped<ListSuppliers>();
-builder.Services.AddScoped<GetSupplierById>();
-builder.Services.AddScoped<CreateSupplier>();
-builder.Services.AddScoped<DeactivateSupplier>();
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly);
+});
 
 var app = builder.Build();
 

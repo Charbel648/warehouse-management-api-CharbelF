@@ -1,13 +1,11 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MediatR;
 
-namespace Warehouse.Presentation.Contracts;
+namespace Warehouse.Application.Products.Commands.CreateProduct;
 
-public class CreateProductRequest
+public class CreateProductCommand : IRequest<CreateProductResponse>
 {
-    [Required]
     public string Name { get; set; } = string.Empty;
 
-    [Required]
     public string SKU { get; set; } = string.Empty;
 
     public string Description { get; set; } = string.Empty;

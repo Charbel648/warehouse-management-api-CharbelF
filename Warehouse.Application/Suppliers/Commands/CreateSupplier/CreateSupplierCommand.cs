@@ -1,10 +1,9 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using MediatR;
 
-namespace Warehouse.Presentation.Contracts;
+namespace Warehouse.Application.Suppliers.Commands.CreateSupplier;
 
-public class CreateSupplierRequest
+public class CreateSupplierCommand : IRequest<CreateSupplierResponse>
 {
-    [Required]
     public string Name { get; set; } = string.Empty;
 
     public string Country { get; set; } = string.Empty;

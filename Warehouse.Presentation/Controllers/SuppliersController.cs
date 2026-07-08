@@ -1,6 +1,9 @@
+﻿using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Warehouse.Application.Suppliers.Commands;
-using Warehouse.Application.Suppliers.Queries;
+using Warehouse.Application.Suppliers.Commands.CreateSupplier;
+using Warehouse.Application.Suppliers.Commands.DeactivateSupplier;
+using Warehouse.Application.Suppliers.Queries.GetSupplierById;
+using Warehouse.Application.Suppliers.Queries.ListSuppliers;
 using Warehouse.Presentation.Contracts;
 
 namespace Warehouse.Presentation.Controllers;
@@ -9,27 +12,17 @@ namespace Warehouse.Presentation.Controllers;
 [Route("api/suppliers")]
 public class SuppliersController : ControllerBase
 {
-    private readonly ListSuppliers _listSuppliers;
-    private readonly GetSupplierById _getSupplierById;
-    private readonly CreateSupplier _createSupplier;
-    private readonly DeactivateSupplier _deactivateSupplier;
+    private readonly IMediator _mediator;
 
-    public SuppliersController(
-        ListSuppliers listSuppliers,
-        GetSupplierById getSupplierById,
-        CreateSupplier createSupplier,
-        DeactivateSupplier deactivateSupplier)
+    public SuppliersController(IMediator mediator)
     {
-        _listSuppliers = listSuppliers;
-        _getSupplierById = getSupplierById;
-        _createSupplier = createSupplier;
-        _deactivateSupplier = deactivateSupplier;
+        _mediator = mediator;
     }
 
     [HttpGet]
     public async Task<ActionResult> GetSuppliers()
     {
-        var suppliers = await _listSuppliers.ExecuteAsync();
+        var suppliers = await _mediator.Send(new ListSuppliersQuery());
 
         return Ok(suppliers);
     }
@@ -38,16 +31,15 @@ public class SuppliersController : ControllerBase
     public async Task<ActionResult> GetSupplier([FromRoute] string id)
     {
         if (!Guid.TryParse(id, out _))
-        {
             return BadRequest("Invalid supplier id");
-        }
 
-        var supplier = await _getSupplierById.ExecuteAsync(id);
+        var supplier = await _mediator.Send(new GetSupplierByIdQuery
+        {
+            SupplierId = id
+        });
 
         if (supplier == null)
-        {
             return NotFound("Supplier not found");
-        }
 
         return Ok(supplier);
     }
@@ -57,14 +49,15 @@ public class SuppliersController : ControllerBase
     {
         try
         {
-            var supplier = await _createSupplier.ExecuteAsync(
-                request.Name,
-                request.Country,
-                request.ContactEmail,
-                request.PhoneNumber
-            );
+            var response = await _mediator.Send(new CreateSupplierCommand
+            {
+                Name = request.Name,
+                Country = request.Country,
+                ContactEmail = request.ContactEmail,
+                PhoneNumber = request.PhoneNumber
+            });
 
-            return CreatedAtAction(nameof(GetSupplier), new { id = supplier.Id }, supplier);
+            return CreatedAtAction(nameof(GetSupplier), new { id = response.Id }, response);
         }
         catch (ArgumentException ex)
         {
@@ -80,16 +73,15 @@ public class SuppliersController : ControllerBase
     public async Task<ActionResult> DeactivateSupplier([FromRoute] string id)
     {
         if (!Guid.TryParse(id, out _))
-        {
             return BadRequest("Invalid supplier id");
-        }
 
-        var supplier = await _deactivateSupplier.ExecuteAsync(id);
+        var supplier = await _mediator.Send(new DeactivateSupplierCommand
+        {
+            SupplierId = id
+        });
 
         if (supplier == null)
-        {
             return NotFound("Supplier not found");
-        }
 
         return Ok(supplier);
     }
