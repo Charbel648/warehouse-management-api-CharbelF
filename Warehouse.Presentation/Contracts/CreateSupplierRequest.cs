@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace warehouse_management.Contracts;
+namespace Warehouse.Presentation.Contracts;
 
 public class CreateSupplierRequest
 {

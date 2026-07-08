@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Http;
 
-namespace warehouse_management.Contracts;
+namespace Warehouse.Presentation.Contracts;
 
 public class UploadProductImageRequest
 {
