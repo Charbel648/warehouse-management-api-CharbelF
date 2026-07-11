@@ -1,60 +1,76 @@
+﻿using Microsoft.EntityFrameworkCore;
 using Warehouse.Domain.Models;
 using Warehouse.Domain.Repositories;
-using Warehouse.Infrastructure.Data;
+using Warehouse.Infrastructure.Persistence;
 
 namespace Warehouse.Infrastructure.Repositories;
 
 public class ProductRepository : IProductRepository
 {
-    public Task<List<Product>> GetAllAsync()
+    private readonly WarehouseDbContext _context;
+
+    public ProductRepository(WarehouseDbContext context)
     {
-        return Task.FromResult(FakeWarehouseStore.Products);
+        _context = context;
     }
 
-    public Task<Product?> GetByIdAsync(string id)
+    public async Task<List<Product>> GetAllAsync()
     {
-        Product? product = FakeWarehouseStore.Products
-            .FirstOrDefault(p => p.Id == id);
-
-        return Task.FromResult(product);
+        return await _context.Products
+            .Include(p => p.Supplier)
+            .Include(p => p.Images)
+            .ToListAsync();
     }
 
-    public Task<List<Product>> SearchAsync(string? name, string? supplier)
+    public async Task<Product?> GetByIdAsync(string id)
     {
-        IEnumerable<Product> products = FakeWarehouseStore.Products;
+        return await _context.Products
+            .Include(p => p.Supplier)
+            .Include(p => p.Images)
+            .FirstOrDefaultAsync(p => p.ProductId == id);
+    }
+
+    public async Task<List<Product>> SearchAsync(string? name, string? supplier)
+    {
+        IQueryable<Product> query = _context.Products
+            .Include(p => p.Supplier)
+            .Include(p => p.Images);
 
         if (!string.IsNullOrWhiteSpace(name))
         {
-            products = products.Where(p =>
-                p.Name.Contains(name, StringComparison.OrdinalIgnoreCase));
+            string loweredName = name.ToLower();
+
+            query = query.Where(p =>
+                p.Name.ToLower().Contains(loweredName));
         }
 
         if (!string.IsNullOrWhiteSpace(supplier))
         {
-            products = products.Where(p =>
-                p.SupplierName.Contains(supplier, StringComparison.OrdinalIgnoreCase));
+            string loweredSupplier = supplier.ToLower();
+
+            query = query.Where(p =>
+                p.SupplierName.ToLower().Contains(loweredSupplier)
+                || (p.Supplier != null && p.Supplier.Name.ToLower().Contains(loweredSupplier)));
         }
 
-        return Task.FromResult(products.ToList());
+        return await query.ToListAsync();
     }
 
-    public Task AddAsync(Product product)
+    public async Task AddAsync(Product product)
     {
-        FakeWarehouseStore.Products.Add(product);
-
-        return Task.CompletedTask;
+        await _context.Products.AddAsync(product);
+        await _context.SaveChangesAsync();
     }
 
-    public Task UpdateAsync(Product product)
+    public async Task UpdateAsync(Product product)
     {
-        return Task.CompletedTask;
+        _context.Products.Update(product);
+        await _context.SaveChangesAsync();
     }
 
-    public Task<bool> SkuExistsAsync(string sku)
+    public async Task<bool> SkuExistsAsync(string sku)
     {
-        bool exists = FakeWarehouseStore.Products.Any(p =>
-            p.SKU.Equals(sku, StringComparison.OrdinalIgnoreCase));
-
-        return Task.FromResult(exists);
+        return await _context.Products
+            .AnyAsync(p => p.SKU.ToLower() == sku.ToLower());
     }
 }

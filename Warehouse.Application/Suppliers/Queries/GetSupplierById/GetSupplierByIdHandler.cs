@@ -1,18 +1,24 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using Warehouse.Application.ViewModels;
 using Warehouse.Domain.Repositories;
 
 namespace Warehouse.Application.Suppliers.Queries.GetSupplierById;
 
-public class GetSupplierByIdHandler : IRequestHandler<GetSupplierByIdQuery, GetSupplierByIdResponse?>
+public class GetSupplierByIdHandler : IRequestHandler<GetSupplierByIdQuery, SupplierViewModel?>
 {
     private readonly ISupplierRepository _supplierRepository;
+    private readonly IMapper _mapper;
 
-    public GetSupplierByIdHandler(ISupplierRepository supplierRepository)
+    public GetSupplierByIdHandler(
+        ISupplierRepository supplierRepository,
+        IMapper mapper)
     {
         _supplierRepository = supplierRepository;
+        _mapper = mapper;
     }
 
-    public async Task<GetSupplierByIdResponse?> Handle(
+    public async Task<SupplierViewModel?> Handle(
         GetSupplierByIdQuery request,
         CancellationToken cancellationToken)
     {
@@ -21,14 +27,6 @@ public class GetSupplierByIdHandler : IRequestHandler<GetSupplierByIdQuery, GetS
         if (supplier == null)
             return null;
 
-        return new GetSupplierByIdResponse
-        {
-            Id = supplier.Id,
-            Name = supplier.Name,
-            Country = supplier.Country,
-            ContactEmail = supplier.ContactEmail,
-            PhoneNumber = supplier.PhoneNumber,
-            IsActive = supplier.IsActive
-        };
+        return _mapper.Map<SupplierViewModel>(supplier);
     }
 }
