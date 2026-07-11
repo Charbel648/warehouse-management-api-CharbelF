@@ -1,22 +1,26 @@
-namespace Warehouse.Domain.Models;
+﻿namespace Warehouse.Domain.Models;
 
 public class Product
 {
-    public string Id { get; private set; } = Guid.NewGuid().ToString();
+    public string ProductId { get; private set; } = Guid.NewGuid().ToString();
 
-    public string Name { get; private set; }
+    public string Id => ProductId;
 
-    public string SKU { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
-    public string Description { get; private set; }
+    public string SKU { get; private set; } = string.Empty;
+
+    public string Description { get; private set; } = string.Empty;
 
     public decimal Price { get; private set; }
 
     public int QuantityInStock { get; private set; }
 
-    public string SupplierId { get; private set; } = string.Empty;
+    public string? SupplierId { get; private set; }
 
-    public string SupplierName { get; private set; }
+    public string SupplierName { get; private set; } = string.Empty;
+
+    public Supplier? Supplier { get; private set; }
 
     public DateTime ExpiryDate { get; private set; }
 
@@ -27,6 +31,10 @@ public class Product
     public DateTime LastUpdatedAt { get; private set; }
 
     public List<ProductImage> Images { get; private set; } = new();
+
+    private Product()
+    {
+    }
 
     public Product(
         string name,
@@ -49,6 +57,7 @@ public class Product
         if (quantityInStock < 0)
             throw new ArgumentException("Quantity cannot be negative");
 
+        ProductId = Guid.NewGuid().ToString();
         Name = name;
         SKU = sku;
         Description = description;
@@ -95,8 +104,9 @@ public class Product
         if (!supplier.IsActive)
             throw new InvalidOperationException("Inactive suppliers cannot be assigned to products");
 
-        SupplierId = supplier.Id;
+        SupplierId = supplier.SupplierId;
         SupplierName = supplier.Name;
+        Supplier = supplier;
         LastUpdatedAt = DateTime.UtcNow;
     }
 
