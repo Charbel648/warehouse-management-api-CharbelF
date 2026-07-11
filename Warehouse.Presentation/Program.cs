@@ -1,5 +1,7 @@
-﻿using Warehouse.Application.Products.Commands.CreateProduct;
+﻿using Microsoft.EntityFrameworkCore;
+using Warehouse.Application.Products.Commands.CreateProduct;
 using Warehouse.Domain.Repositories;
+using Warehouse.Infrastructure.Persistence.DbFirst;
 using Warehouse.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +13,11 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddSingleton<IProductRepository, ProductRepository>();
 builder.Services.AddSingleton<ISupplierRepository, SupplierRepository>();
+
+builder.Services.AddDbContext<WarehouseDbFirstContext>(options =>
+{
+    options.UseNpgsql(builder.Configuration.GetConnectionString("WarehouseDbFirst"));
+});
 
 builder.Services.AddMediatR(cfg =>
 {
