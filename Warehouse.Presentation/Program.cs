@@ -25,15 +25,19 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+string? warehouseConnectionString = builder.Configuration.GetConnectionString("WarehouseDb");
+
 builder.Services.AddDbContext<WarehouseDbContext>(options =>
 {
-    options.UseNpgsql(builder.Configuration.GetConnectionString("WarehouseDb"));
+    options.UseNpgsql(warehouseConnectionString);
 });
 
-builder.Services.AddDbContextFactory<WarehouseDbContext>(options =>
-{
-    options.UseNpgsql(builder.Configuration.GetConnectionString("WarehouseDb"));
-});
+builder.Services.AddDbContextFactory<WarehouseDbContext>(
+    options =>
+    {
+        options.UseNpgsql(warehouseConnectionString);
+    },
+    ServiceLifetime.Scoped);
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();

@@ -118,7 +118,7 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProduct), new { id = response.Id }, response);
     }
 
-    [HttpPost("{id}/quantity")]
+    [HttpPut("{id}/quantity")]
     public async Task<ActionResult> UpdateQuantity(
         [FromRoute] string id,
         [FromBody] UpdateProductQuantityRequest request,
@@ -138,7 +138,7 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
-    [HttpPost("{id}/price")]
+    [HttpPut("{id}/price")]
     public async Task<ActionResult> UpdatePrice(
         [FromRoute] string id,
         [FromBody] UpdateProductPriceRequest request,
