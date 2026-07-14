@@ -4,6 +4,7 @@ using Warehouse.Application.Suppliers.Commands.CreateSupplier;
 using Warehouse.Application.Suppliers.Commands.DeactivateSupplier;
 using Warehouse.Application.Suppliers.Queries.GetSupplierById;
 using Warehouse.Application.Suppliers.Queries.ListSuppliers;
+using Warehouse.Domain.Exceptions;
 using Warehouse.Presentation.Contracts;
 
 namespace Warehouse.Presentation.Controllers;
@@ -20,69 +21,68 @@ public class SuppliersController : ControllerBase
     }
 
     [HttpGet]
-    public async Task<ActionResult> GetSuppliers()
+    public async Task<ActionResult> GetSuppliers(CancellationToken cancellationToken)
     {
-        var suppliers = await _mediator.Send(new ListSuppliersQuery());
+        var suppliers = await _mediator.Send(new ListSuppliersQuery(), cancellationToken);
 
         return Ok(suppliers);
     }
 
     [HttpGet("{id}")]
-    public async Task<ActionResult> GetSupplier([FromRoute] string id)
+    public async Task<ActionResult> GetSupplier(
+        [FromRoute] string id,
+        CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid supplier id");
+        ValidateGuid(id, "supplier");
 
         var supplier = await _mediator.Send(new GetSupplierByIdQuery
         {
             SupplierId = id
-        });
+        }, cancellationToken);
 
         if (supplier == null)
-            return NotFound("Supplier not found");
+            throw new NotFoundException("Supplier", id);
 
         return Ok(supplier);
     }
 
     [HttpPost]
-    public async Task<ActionResult> AddSupplier([FromBody] CreateSupplierRequest request)
+    public async Task<ActionResult> AddSupplier(
+        [FromBody] CreateSupplierRequest request,
+        CancellationToken cancellationToken)
     {
-        try
+        var response = await _mediator.Send(new CreateSupplierCommand
         {
-            var response = await _mediator.Send(new CreateSupplierCommand
-            {
-                Name = request.Name,
-                Country = request.Country,
-                ContactEmail = request.ContactEmail,
-                PhoneNumber = request.PhoneNumber
-            });
+            Name = request.Name,
+            Country = request.Country,
+            ContactEmail = request.ContactEmail,
+            PhoneNumber = request.PhoneNumber
+        }, cancellationToken);
 
-            return CreatedAtAction(nameof(GetSupplier), new { id = response.Id }, response);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return CreatedAtAction(nameof(GetSupplier), new { id = response.Id }, response);
     }
 
     [HttpDelete("{id}")]
-    public async Task<ActionResult> DeactivateSupplier([FromRoute] string id)
+    public async Task<ActionResult> DeactivateSupplier(
+        [FromRoute] string id,
+        CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid supplier id");
+        ValidateGuid(id, "supplier");
 
         var supplier = await _mediator.Send(new DeactivateSupplierCommand
         {
             SupplierId = id
-        });
+        }, cancellationToken);
 
         if (supplier == null)
-            return NotFound("Supplier not found");
+            throw new NotFoundException("Supplier", id);
 
         return Ok(supplier);
+    }
+
+    private static void ValidateGuid(string id, string resourceName)
+    {
+        if (!Guid.TryParse(id, out _))
+            throw new BusinessRuleException($"Invalid {resourceName} id", $"invalid_{resourceName}_id");
     }
 }
