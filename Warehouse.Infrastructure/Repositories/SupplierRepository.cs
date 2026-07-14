@@ -17,14 +17,12 @@ public class SupplierRepository : ISupplierRepository
     public async Task<List<Supplier>> GetAllAsync()
     {
         return await _context.Suppliers
-            .Include(s => s.Products)
             .ToListAsync();
     }
 
     public async Task<Supplier?> GetByIdAsync(string id)
     {
         return await _context.Suppliers
-            .Include(s => s.Products)
             .FirstOrDefaultAsync(s => s.SupplierId == id);
     }
 

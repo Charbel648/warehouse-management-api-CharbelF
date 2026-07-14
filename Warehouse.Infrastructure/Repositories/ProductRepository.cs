@@ -38,19 +38,15 @@ public class ProductRepository : IProductRepository
 
         if (!string.IsNullOrWhiteSpace(name))
         {
-            string loweredName = name.ToLower();
-
             query = query.Where(p =>
-                p.Name.ToLower().Contains(loweredName));
+                EF.Functions.ILike(p.Name, $"%{name}%"));
         }
 
         if (!string.IsNullOrWhiteSpace(supplier))
         {
-            string loweredSupplier = supplier.ToLower();
-
             query = query.Where(p =>
-                p.SupplierName.ToLower().Contains(loweredSupplier)
-                || (p.Supplier != null && p.Supplier.Name.ToLower().Contains(loweredSupplier)));
+                EF.Functions.ILike(p.SupplierName, $"%{supplier}%")
+                || (p.Supplier != null && EF.Functions.ILike(p.Supplier.Name, $"%{supplier}%")));
         }
 
         return await query.ToListAsync();
@@ -71,6 +67,6 @@ public class ProductRepository : IProductRepository
     public async Task<bool> SkuExistsAsync(string sku)
     {
         return await _context.Products
-            .AnyAsync(p => p.SKU.ToLower() == sku.ToLower());
+            .AnyAsync(p => EF.Functions.ILike(p.SKU, sku));
     }
 }
