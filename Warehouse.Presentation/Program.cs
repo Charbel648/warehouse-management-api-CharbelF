@@ -19,6 +19,7 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
 
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+builder.Services.AddScoped<IProductReportRepository, ProductReportRepository>();
 
 builder.Services.AddMediatR(cfg =>
 {

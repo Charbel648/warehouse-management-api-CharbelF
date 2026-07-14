@@ -20,7 +20,7 @@ public class Product
 
     public string SupplierName { get; private set; } = string.Empty;
 
-    public Supplier? Supplier { get; private set; }
+    public Supplier Supplier { get; private set; }
 
     public DateTime ExpiryDate { get; private set; }
 

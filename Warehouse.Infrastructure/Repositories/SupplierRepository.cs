@@ -43,6 +43,6 @@ public class SupplierRepository : ISupplierRepository
     public async Task<bool> EmailExistsAsync(string contactEmail)
     {
         return await _context.Suppliers
-            .AnyAsync(s => s.ContactEmail.ToLower() == contactEmail.ToLower());
+            .AnyAsync(s => EF.Functions.ILike(s.ContactEmail, contactEmail));
     }
 }
