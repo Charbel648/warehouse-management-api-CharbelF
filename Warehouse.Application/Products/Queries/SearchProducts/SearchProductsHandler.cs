@@ -1,18 +1,24 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using Warehouse.Application.ViewModels;
 using Warehouse.Domain.Repositories;
 
 namespace Warehouse.Application.Products.Queries.SearchProducts;
 
-public class SearchProductsHandler : IRequestHandler<SearchProductsQuery, List<SearchProductsResponse>>
+public class SearchProductsHandler : IRequestHandler<SearchProductsQuery, List<ProductViewModel>>
 {
     private readonly IProductRepository _productRepository;
+    private readonly IMapper _mapper;
 
-    public SearchProductsHandler(IProductRepository productRepository)
+    public SearchProductsHandler(
+        IProductRepository productRepository,
+        IMapper mapper)
     {
         _productRepository = productRepository;
+        _mapper = mapper;
     }
 
-    public async Task<List<SearchProductsResponse>> Handle(
+    public async Task<List<ProductViewModel>> Handle(
         SearchProductsQuery request,
         CancellationToken cancellationToken)
     {
@@ -21,16 +27,6 @@ public class SearchProductsHandler : IRequestHandler<SearchProductsQuery, List<S
 
         var products = await _productRepository.SearchAsync(request.Name, request.Supplier);
 
-        return products
-            .Select(p => new SearchProductsResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                SKU = p.SKU,
-                Price = p.Price,
-                QuantityInStock = p.QuantityInStock,
-                SupplierName = p.SupplierName
-            })
-            .ToList();
+        return _mapper.Map<List<ProductViewModel>>(products);
     }
 }

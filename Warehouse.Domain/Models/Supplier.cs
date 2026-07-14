@@ -2,17 +2,25 @@
 
 public class Supplier
 {
-    public string Id { get; private set; } = Guid.NewGuid().ToString();
+    public string SupplierId { get; private set; } = Guid.NewGuid().ToString();
 
-    public string Name { get; private set; }
+    public string Id => SupplierId;
 
-    public string Country { get; private set; }
+    public string Name { get; private set; } = string.Empty;
 
-    public string ContactEmail { get; private set; }
+    public string Country { get; private set; } = string.Empty;
 
-    public string PhoneNumber { get; private set; }
+    public string ContactEmail { get; private set; } = string.Empty;
+
+    public string PhoneNumber { get; private set; } = string.Empty;
 
     public bool IsActive { get; private set; } = true;
+
+    public List<Product> Products { get; private set; } = new();
+
+    private Supplier()
+    {
+    }
 
     public Supplier(
         string name,
@@ -23,10 +31,12 @@ public class Supplier
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Supplier name is required");
 
+        SupplierId = Guid.NewGuid().ToString();
         Name = name;
         Country = country;
         ContactEmail = contactEmail;
         PhoneNumber = phoneNumber;
+        IsActive = true;
     }
 
     public void Deactivate()

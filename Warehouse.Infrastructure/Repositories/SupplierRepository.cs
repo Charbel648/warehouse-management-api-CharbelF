@@ -1,41 +1,46 @@
+﻿using Microsoft.EntityFrameworkCore;
 using Warehouse.Domain.Models;
 using Warehouse.Domain.Repositories;
-using Warehouse.Infrastructure.Data;
+using Warehouse.Infrastructure.Persistence;
 
 namespace Warehouse.Infrastructure.Repositories;
 
 public class SupplierRepository : ISupplierRepository
 {
-    public Task<List<Supplier>> GetAllAsync()
+    private readonly WarehouseDbContext _context;
+
+    public SupplierRepository(WarehouseDbContext context)
     {
-        return Task.FromResult(FakeWarehouseStore.Suppliers);
+        _context = context;
     }
 
-    public Task<Supplier?> GetByIdAsync(string id)
+    public async Task<List<Supplier>> GetAllAsync()
     {
-        Supplier? supplier = FakeWarehouseStore.Suppliers
-            .FirstOrDefault(s => s.Id == id);
-
-        return Task.FromResult(supplier);
+        return await _context.Suppliers
+            .ToListAsync();
     }
 
-    public Task AddAsync(Supplier supplier)
+    public async Task<Supplier?> GetByIdAsync(string id)
     {
-        FakeWarehouseStore.Suppliers.Add(supplier);
-
-        return Task.CompletedTask;
+        return await _context.Suppliers
+            .FirstOrDefaultAsync(s => s.SupplierId == id);
     }
 
-    public Task UpdateAsync(Supplier supplier)
+    public async Task AddAsync(Supplier supplier)
     {
-        return Task.CompletedTask;
+        await _context.Suppliers.AddAsync(supplier);
+        await _context.SaveChangesAsync();
     }
 
-    public Task<bool> EmailExistsAsync(string contactEmail)
+    public async Task UpdateAsync(Supplier supplier)
     {
-        bool exists = FakeWarehouseStore.Suppliers.Any(s =>
-            s.ContactEmail.Equals(contactEmail, StringComparison.OrdinalIgnoreCase));
+        _context.Suppliers.Update(supplier);
+        await _context.SaveChangesAsync();
+    }
 
-        return Task.FromResult(exists);
+    public async Task<bool> EmailExistsAsync(string contactEmail)
+    {
+        return await _context.Suppliers
+            .AnyAsync(s => EF.Functions.ILike(s.ContactEmail, contactEmail));
     }
 }

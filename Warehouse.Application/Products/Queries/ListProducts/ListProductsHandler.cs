@@ -1,18 +1,24 @@
-﻿using MediatR;
+﻿using AutoMapper;
+using MediatR;
+using Warehouse.Application.ViewModels;
 using Warehouse.Domain.Repositories;
 
 namespace Warehouse.Application.Products.Queries.ListProducts;
 
-public class ListProductsHandler : IRequestHandler<ListProductsQuery, List<ListProductsResponse>>
+public class ListProductsHandler : IRequestHandler<ListProductsQuery, List<ProductViewModel>>
 {
     private readonly IProductRepository _productRepository;
+    private readonly IMapper _mapper;
 
-    public ListProductsHandler(IProductRepository productRepository)
+    public ListProductsHandler(
+        IProductRepository productRepository,
+        IMapper mapper)
     {
         _productRepository = productRepository;
+        _mapper = mapper;
     }
 
-    public async Task<List<ListProductsResponse>> Handle(
+    public async Task<List<ProductViewModel>> Handle(
         ListProductsQuery request,
         CancellationToken cancellationToken)
     {
@@ -25,20 +31,10 @@ public class ListProductsHandler : IRequestHandler<ListProductsQuery, List<ListP
                 .ToList();
         }
 
-        return products
+        products = products
             .OrderByDescending(p => p.CreatedAt)
-            .Select(p => new ListProductsResponse
-            {
-                Id = p.Id,
-                Name = p.Name,
-                SKU = p.SKU,
-                Description = p.Description,
-                Price = p.Price,
-                QuantityInStock = p.QuantityInStock,
-                SupplierName = p.SupplierName,
-                IsArchived = p.IsArchived,
-                CreatedAt = p.CreatedAt
-            })
             .ToList();
+
+        return _mapper.Map<List<ProductViewModel>>(products);
     }
 }
