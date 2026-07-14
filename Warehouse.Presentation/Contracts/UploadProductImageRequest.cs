@@ -1,10 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Http;
 
 namespace Warehouse.Presentation.Contracts;
 
 public class UploadProductImageRequest
 {
-    [Required]
+    [Required(ErrorMessage = "Image is required")]
     public IFormFile Image { get; set; } = null!;
 }
