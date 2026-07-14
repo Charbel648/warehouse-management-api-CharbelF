@@ -17,24 +17,19 @@ public class ProductRepository : IProductRepository
     public async Task<List<Product>> GetAllAsync()
     {
         return await _context.Products
-            .Include(p => p.Supplier)
-            .Include(p => p.Images)
             .ToListAsync();
     }
 
     public async Task<Product?> GetByIdAsync(string id)
     {
         return await _context.Products
-            .Include(p => p.Supplier)
             .Include(p => p.Images)
             .FirstOrDefaultAsync(p => p.ProductId == id);
     }
 
     public async Task<List<Product>> SearchAsync(string? name, string? supplier)
     {
-        IQueryable<Product> query = _context.Products
-            .Include(p => p.Supplier)
-            .Include(p => p.Images);
+        IQueryable<Product> query = _context.Products;
 
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -45,8 +40,7 @@ public class ProductRepository : IProductRepository
         if (!string.IsNullOrWhiteSpace(supplier))
         {
             query = query.Where(p =>
-                EF.Functions.ILike(p.SupplierName, $"%{supplier}%")
-                || (p.Supplier != null && EF.Functions.ILike(p.Supplier.Name, $"%{supplier}%")));
+                EF.Functions.ILike(p.SupplierName, $"%{supplier}%"));
         }
 
         return await query.ToListAsync();

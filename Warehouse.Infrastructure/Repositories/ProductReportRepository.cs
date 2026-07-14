@@ -17,11 +17,7 @@ public class ProductReportRepository : IProductReportRepository
     public async Task<List<Product>> GetProductsBySupplierAsync(string supplierName, string sortOrder)
     {
         IQueryable<Product> query = _context.Products
-            .Include(p => p.Supplier)
-            .Include(p => p.Images)
-            .Where(p =>
-                p.SupplierName.ToLower() == supplierName.ToLower()
-                || (p.Supplier != null && p.Supplier.Name.ToLower() == supplierName.ToLower()));
+            .Where(p => EF.Functions.ILike(p.SupplierName, supplierName));
 
         if (sortOrder.ToLower() == "asc")
         {
@@ -45,8 +41,6 @@ public class ProductReportRepository : IProductReportRepository
         int skip = (pageNumber - 1) * pageSize;
 
         return await _context.Products
-            .Include(p => p.Supplier)
-            .Include(p => p.Images)
             .OrderBy(p => p.CreatedAt)
             .Skip(skip)
             .Take(pageSize)

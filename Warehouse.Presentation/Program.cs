@@ -26,7 +26,10 @@ builder.Services.AddMediatR(cfg =>
     cfg.RegisterServicesFromAssembly(typeof(CreateProductCommand).Assembly);
 });
 
-builder.Services.AddAutoMapper(typeof(WarehouseProfile).Assembly);
+builder.Services.AddAutoMapper(config =>
+{
+    config.AddProfile<WarehouseProfile>();
+});
 
 var app = builder.Build();
 
