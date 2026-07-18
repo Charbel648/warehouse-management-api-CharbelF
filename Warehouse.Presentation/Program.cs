@@ -162,7 +162,7 @@ try
     RecurringJob.AddOrUpdate<ExpiringProductsBackgroundJob>(
         "expired-and-expiring-products-check",
         job => job.CheckExpiringProductsAsync(),
-        app.Configuration["BackgroundJobs:ExpiredProductsCron"] ?? Cron.Daily);
+        app.Configuration["BackgroundJobs:ExpiredProductsCron"] ?? Cron.Daily());
 
     app.Run();
 }
@@ -174,3 +174,4 @@ finally
 {
     Log.CloseAndFlush();
 }
+
