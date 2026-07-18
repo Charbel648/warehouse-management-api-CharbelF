@@ -7,7 +7,6 @@ using Warehouse.Infrastructure.Persistence;
 using Warehouse.Infrastructure.Repositories;
 using Warehouse.Presentation.Filters;
 using Warehouse.Presentation.Middleware;
-using Warehouse.Presentation.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -39,7 +38,6 @@ builder.Services.AddScoped<IInventoryDashboardRepository, InventoryDashboardRepo
 
 builder.Services.AddScoped<ModelValidationFilter>();
 builder.Services.AddScoped<ActionLoggingFilter>();
-builder.Services.AddScoped<ValidationMetadataService>();
 
 builder.Services.AddMediatR(cfg =>
 {
