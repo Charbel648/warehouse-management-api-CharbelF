@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Warehouse.Application.Common.Caching;
 using Warehouse.Domain.Models;
 using Warehouse.Domain.Repositories;
 
@@ -8,17 +9,27 @@ public class GetInventoryDashboardQueryHandler
     : IRequestHandler<GetInventoryDashboardQuery, InventoryDashboardViewModel>
 {
     private readonly IInventoryDashboardRepository _inventoryDashboardRepository;
+    private readonly ICacheService _cacheService;
 
     public GetInventoryDashboardQueryHandler(
-        IInventoryDashboardRepository inventoryDashboardRepository)
+        IInventoryDashboardRepository inventoryDashboardRepository,
+        ICacheService cacheService)
     {
         _inventoryDashboardRepository = inventoryDashboardRepository;
+        _cacheService = cacheService;
     }
 
     public async Task<InventoryDashboardViewModel> Handle(
         GetInventoryDashboardQuery request,
         CancellationToken cancellationToken)
     {
+        var cachedDashboard = await _cacheService.GetAsync<InventoryDashboardViewModel>(
+            CacheKeys.InventoryDashboard,
+            cancellationToken);
+
+        if (cachedDashboard != null)
+            return cachedDashboard;
+
         var dashboard = new InventoryDashboardViewModel();
 
         var productStatusGraph = await BuildGraphAsync(
@@ -38,6 +49,12 @@ public class GetInventoryDashboardQueryHandler
             () => _inventoryDashboardRepository.GetSuppliersByCountryGraphAsync(cancellationToken));
 
         dashboard.Graphs.Add(suppliersByCountryGraph);
+
+        await _cacheService.SetAsync(
+            CacheKeys.InventoryDashboard,
+            dashboard,
+            TimeSpan.FromMinutes(5),
+            cancellationToken);
 
         return dashboard;
     }
