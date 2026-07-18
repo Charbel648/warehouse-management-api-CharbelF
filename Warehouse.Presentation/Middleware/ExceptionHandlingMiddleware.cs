@@ -1,5 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.Extensions.Localization;
 using Warehouse.Domain.Exceptions;
+using Warehouse.Presentation.Resources;
 using Warehouse.Presentation.Responses;
 
 namespace Warehouse.Presentation.Middleware;
@@ -8,13 +10,16 @@ public class ExceptionHandlingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<ExceptionHandlingMiddleware> _logger;
+    private readonly IStringLocalizer<SharedResources> _localizer;
 
     public ExceptionHandlingMiddleware(
         RequestDelegate next,
-        ILogger<ExceptionHandlingMiddleware> logger)
+        ILogger<ExceptionHandlingMiddleware> logger,
+        IStringLocalizer<SharedResources> localizer)
     {
         _next = next;
         _logger = logger;
+        _localizer = localizer;
     }
 
     public async Task InvokeAsync(HttpContext context)
@@ -37,18 +42,21 @@ public class ExceptionHandlingMiddleware
         }
     }
 
-    private static async Task WriteErrorResponseAsync(HttpContext context, Exception exception)
+    private async Task WriteErrorResponseAsync(HttpContext context, Exception exception)
     {
         var statusCode = StatusCodes.Status500InternalServerError;
         var errorCode = "unexpected_error";
-        var message = "An unexpected server error occurred";
+        var message = _localizer["UnexpectedError"].Value;
 
         switch (exception)
         {
-            case NotFoundException:
+            case NotFoundException notFoundException:
                 statusCode = StatusCodes.Status404NotFound;
                 errorCode = "not_found";
-                message = exception.Message;
+                message = _localizer[
+                    "ResourceNotFound",
+                    notFoundException.ResourceName,
+                    notFoundException.ResourceId].Value;
                 break;
 
             case BusinessRuleException businessRuleException:
@@ -66,12 +74,6 @@ public class ExceptionHandlingMiddleware
             case ArgumentException:
                 statusCode = StatusCodes.Status400BadRequest;
                 errorCode = "invalid_request";
-                message = exception.Message;
-                break;
-
-            case InvalidOperationException:
-                statusCode = StatusCodes.Status400BadRequest;
-                errorCode = "business_rule_violation";
                 message = exception.Message;
                 break;
         }
