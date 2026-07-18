@@ -1,6 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Warehouse.Domain.Exceptions;
-using Warehouse.Domain.Repositories;
+﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
+using Warehouse.Application.StockAdjustments.Commands.AdjustStock;
 using Warehouse.Presentation.Contracts;
 
 namespace Warehouse.Presentation.Controllers;
@@ -9,11 +9,11 @@ namespace Warehouse.Presentation.Controllers;
 [Route("api/stock-adjustments")]
 public class StockAdjustmentsController : ControllerBase
 {
-    private readonly IProductRepository _productRepository;
+    private readonly IMediator _mediator;
 
-    public StockAdjustmentsController(IProductRepository productRepository)
+    public StockAdjustmentsController(IMediator mediator)
     {
-        _productRepository = productRepository;
+        _mediator = mediator;
     }
 
     [HttpPost]
@@ -21,33 +21,13 @@ public class StockAdjustmentsController : ControllerBase
         [FromBody] StockAdjustmentRequest request,
         CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(request.ProductId, out _))
-            throw new BusinessRuleException("Invalid product id", "invalid_product_id");
-
-        var product = await _productRepository.GetByIdAsync(request.ProductId);
-
-        if (product == null)
-            throw new NotFoundException("Product", request.ProductId);
-
-        int previousQuantity = product.QuantityInStock;
-        int newQuantity = previousQuantity + request.QuantityChange;
-
-        if (newQuantity < 0)
-            throw new BusinessRuleException("Stock adjustment cannot make product quantity negative");
-
-        product.UpdateQuantity(newQuantity);
-
-        await _productRepository.UpdateAsync(product);
-
-        return Ok(new
+        var response = await _mediator.Send(new AdjustStockCommand
         {
-            ProductId = product.Id,
-            ProductName = product.Name,
-            PreviousQuantity = previousQuantity,
+            ProductId = request.ProductId,
             QuantityChange = request.QuantityChange,
-            NewQuantity = product.QuantityInStock,
-            request.Reason,
-            UpdatedAt = product.LastUpdatedAt
-        });
+            Reason = request.Reason
+        }, cancellationToken);
+
+        return Ok(response);
     }
 }

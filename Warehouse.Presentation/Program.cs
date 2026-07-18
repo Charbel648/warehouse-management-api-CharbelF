@@ -32,15 +32,10 @@ builder.Services.AddDbContext<WarehouseDbContext>(options =>
     options.UseNpgsql(warehouseConnectionString);
 });
 
-builder.Services.AddDbContextFactory<WarehouseDbContext>(
-    options =>
-    {
-        options.UseNpgsql(warehouseConnectionString);
-    },
-    ServiceLifetime.Scoped);
-
 builder.Services.AddScoped<IProductRepository, ProductRepository>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
+builder.Services.AddScoped<IProductReportRepository, ProductReportRepository>();
+builder.Services.AddScoped<IInventoryDashboardRepository, InventoryDashboardRepository>();
 
 builder.Services.AddScoped<ModelValidationFilter>();
 builder.Services.AddScoped<ActionLoggingFilter>();

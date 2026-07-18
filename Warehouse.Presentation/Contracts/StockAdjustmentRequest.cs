@@ -5,6 +5,9 @@ namespace Warehouse.Presentation.Contracts;
 public class StockAdjustmentRequest : IValidatableObject
 {
     [Required(ErrorMessage = "Product id is required")]
+    [RegularExpression(
+        @"^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$",
+        ErrorMessage = "Product id must be a valid GUID")]
     public string ProductId { get; set; } = string.Empty;
 
     [Range(-100000, 100000, ErrorMessage = "Quantity change is outside allowed range")]

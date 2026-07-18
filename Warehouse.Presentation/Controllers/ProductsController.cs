@@ -43,6 +43,24 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult> GetProduct(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        string productId = id.ToString();
+
+        var product = await _mediator.Send(new GetProductByIdQuery
+        {
+            ProductId = productId
+        }, cancellationToken);
+
+        if (product == null)
+            throw new NotFoundException("Product", productId);
+
+        return Ok(product);
+    }
+
     [HttpGet("search")]
     public async Task<ActionResult> SearchProducts(
         [FromQuery] string? name,
@@ -81,24 +99,6 @@ public class ProductsController : ControllerBase
         });
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult> GetProduct(
-        [FromRoute] string id,
-        CancellationToken cancellationToken)
-    {
-        ValidateGuid(id, "product");
-
-        var product = await _mediator.Send(new GetProductByIdQuery
-        {
-            ProductId = id
-        }, cancellationToken);
-
-        if (product == null)
-            throw new NotFoundException("Product", id);
-
-        return Ok(product);
-    }
-
     [HttpPost]
     public async Task<ActionResult> AddProduct(
         [FromBody] CreateProductRequest request,
@@ -118,54 +118,54 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProduct), new { id = response.Id }, response);
     }
 
-    [HttpPut("{id}/quantity")]
+    [HttpPut("{id:guid}/quantity")]
     public async Task<ActionResult> UpdateQuantity(
-        [FromRoute] string id,
+        [FromRoute] Guid id,
         [FromBody] UpdateProductQuantityRequest request,
         CancellationToken cancellationToken)
     {
-        ValidateGuid(id, "product");
+        string productId = id.ToString();
 
         var product = await _mediator.Send(new UpdateProductQuantityCommand
         {
-            ProductId = id,
+            ProductId = productId,
             QuantityInStock = request.QuantityInStock
         }, cancellationToken);
 
         if (product == null)
-            throw new NotFoundException("Product", id);
+            throw new NotFoundException("Product", productId);
 
         return Ok(product);
     }
 
-    [HttpPut("{id}/price")]
+    [HttpPut("{id:guid}/price")]
     public async Task<ActionResult> UpdatePrice(
-        [FromRoute] string id,
+        [FromRoute] Guid id,
         [FromBody] UpdateProductPriceRequest request,
         CancellationToken cancellationToken)
     {
-        ValidateGuid(id, "product");
+        string productId = id.ToString();
 
         var product = await _mediator.Send(new UpdateProductPriceCommand
         {
-            ProductId = id,
+            ProductId = productId,
             Price = request.Price
         }, cancellationToken);
 
         if (product == null)
-            throw new NotFoundException("Product", id);
+            throw new NotFoundException("Product", productId);
 
         return Ok(product);
     }
 
-    [HttpPost("{id}/image")]
+    [HttpPost("{id:guid}/image")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult> UploadProductImage(
-        [FromRoute] string id,
+        [FromRoute] Guid id,
         [FromForm] UploadProductImageRequest request,
         CancellationToken cancellationToken)
     {
-        ValidateGuid(id, "product");
+        string productId = id.ToString();
 
         IFormFile image = request.Image;
 
@@ -197,59 +197,53 @@ public class ProductsController : ControllerBase
 
         var response = await _mediator.Send(new AddProductImageCommand
         {
-            ProductId = id,
+            ProductId = productId,
             FileName = fileName,
             FilePath = $"/uploads/{fileName}"
         }, cancellationToken);
 
         if (response == null)
-            throw new NotFoundException("Product", id);
+            throw new NotFoundException("Product", productId);
 
         return Ok(response);
     }
 
-    [HttpDelete("{id}")]
+    [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteProduct(
-        [FromRoute] string id,
+        [FromRoute] Guid id,
         CancellationToken cancellationToken)
     {
-        ValidateGuid(id, "product");
+        string productId = id.ToString();
 
         var product = await _mediator.Send(new ArchiveProductCommand
         {
-            ProductId = id
+            ProductId = productId
         }, cancellationToken);
 
         if (product == null)
-            throw new NotFoundException("Product", id);
+            throw new NotFoundException("Product", productId);
 
         return Ok(product);
     }
 
-    [HttpPost("{id}/assign-supplier/{supplierId}")]
+    [HttpPost("{id:guid}/assign-supplier/{supplierId:guid}")]
     public async Task<ActionResult> AssignSupplier(
-        [FromRoute] string id,
-        [FromRoute] string supplierId,
+        [FromRoute] Guid id,
+        [FromRoute] Guid supplierId,
         CancellationToken cancellationToken)
     {
-        ValidateGuid(id, "product");
-        ValidateGuid(supplierId, "supplier");
+        string productId = id.ToString();
+        string supplierIdValue = supplierId.ToString();
 
         var response = await _mediator.Send(new AssignSupplierToProductCommand
         {
-            ProductId = id,
-            SupplierId = supplierId
+            ProductId = productId,
+            SupplierId = supplierIdValue
         }, cancellationToken);
 
         if (response == null)
-            throw new NotFoundException("Product", id);
+            throw new NotFoundException("Product", productId);
 
         return Ok(response);
-    }
-
-    private static void ValidateGuid(string id, string resourceName)
-    {
-        if (!Guid.TryParse(id, out _))
-            throw new BusinessRuleException($"Invalid {resourceName} id", $"invalid_{resourceName}_id");
     }
 }
