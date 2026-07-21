@@ -1,11 +1,13 @@
 ﻿namespace Warehouse.Application.Common.Caching;
 
-public static class CacheKeys
+public static partial class CacheKeys
 {
-    public static string Products(bool onlyAvailable)
+    private const string Prefix = "warehouse-management-api";
+
+    public static string ProductListByAvailability(bool onlyAvailable)
     {
-        return $"products:list:onlyAvailable:{onlyAvailable}";
+        return $"{Prefix}:products:list:filter:only-available:{onlyAvailable}";
     }
 
-    public const string InventoryDashboard = "inventory:dashboard";
+    public const string InventoryDashboardGraphs = "warehouse-management-api:inventory-dashboard:graphs:v1";
 }

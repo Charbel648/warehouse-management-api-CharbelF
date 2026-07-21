@@ -24,7 +24,7 @@ public class GetInventoryDashboardQueryHandler
         CancellationToken cancellationToken)
     {
         var cachedDashboard = await _cacheService.GetAsync<InventoryDashboardViewModel>(
-            CacheKeys.InventoryDashboard,
+            CacheKeys.InventoryDashboardGraphs,
             cancellationToken);
 
         if (cachedDashboard != null)
@@ -51,7 +51,7 @@ public class GetInventoryDashboardQueryHandler
         dashboard.Graphs.Add(suppliersByCountryGraph);
 
         await _cacheService.SetAsync(
-            CacheKeys.InventoryDashboard,
+            CacheKeys.InventoryDashboardGraphs,
             dashboard,
             TimeSpan.FromMinutes(5),
             cancellationToken);
@@ -89,3 +89,4 @@ public class GetInventoryDashboardQueryHandler
         }
     }
 }
+

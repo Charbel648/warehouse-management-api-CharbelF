@@ -16,7 +16,7 @@ public class ExpiringProductsBackgroundJob
         _logger = logger;
     }
 
-    public async Task CheckExpiringProductsAsync()
+    public async Task CheckExpiringProductsAsync(CancellationToken cancellationToken)
     {
         DateTime currentDate = DateTime.UtcNow.Date;
         DateTime expiringLimitDate = currentDate.AddDays(30);
@@ -24,7 +24,7 @@ public class ExpiringProductsBackgroundJob
         var products = await _productRepository.GetExpiredOrExpiringProductsAsync(
             currentDate,
             expiringLimitDate,
-            CancellationToken.None);
+            cancellationToken);
 
         var expiredProducts = products
             .Where(product => product.ExpiryDate.Date < currentDate)
@@ -43,7 +43,7 @@ public class ExpiringProductsBackgroundJob
 
         foreach (var product in expiredProducts)
         {
-            _logger.LogWarning(
+            _logger.LogInformation(
                 "Expired product found. ProductId: {ProductId}, ProductName: {ProductName}, ExpiryDate: {ExpiryDate}",
                 product.Id,
                 product.Name,

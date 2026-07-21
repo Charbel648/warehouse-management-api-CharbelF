@@ -46,7 +46,7 @@ public class ExceptionHandlingMiddleware
     {
         var statusCode = StatusCodes.Status500InternalServerError;
         var errorCode = "unexpected_error";
-        var message = _localizer["UnexpectedError"].Value;
+        var message = _localizer[SharedResources.UnexpectedError].Value;
 
         switch (exception)
         {
@@ -54,7 +54,7 @@ public class ExceptionHandlingMiddleware
                 statusCode = StatusCodes.Status404NotFound;
                 errorCode = "not_found";
                 message = _localizer[
-                    "ResourceNotFound",
+                    SharedResources.ResourceNotFound,
                     notFoundException.ResourceName,
                     notFoundException.ResourceId].Value;
                 break;

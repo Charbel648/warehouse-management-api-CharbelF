@@ -8,8 +8,9 @@ public static class WarehouseCacheInvalidator
         ICacheService cacheService,
         CancellationToken cancellationToken)
     {
-        await cacheService.RemoveAsync(CacheKeys.Products(false), cancellationToken);
-        await cacheService.RemoveAsync(CacheKeys.Products(true), cancellationToken);
-        await cacheService.RemoveAsync(CacheKeys.InventoryDashboard, cancellationToken);
+        await cacheService.RemoveAsync(CacheKeys.ProductListByAvailability(false), cancellationToken);
+        await cacheService.RemoveAsync(CacheKeys.ProductListByAvailability(true), cancellationToken);
+        await cacheService.RemoveAsync(CacheKeys.InventoryDashboardGraphs, cancellationToken);
     }
 }
+

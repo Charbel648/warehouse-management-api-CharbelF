@@ -33,7 +33,7 @@ public class ModelValidationFilter : IActionFilter
         context.Result = new BadRequestObjectResult(new ApiErrorResponse
         {
             ErrorCode = "validation_error",
-            Message = _localizer["ValidationError"],
+            Message = _localizer[SharedResources.ValidationError].Value,
             TraceId = context.HttpContext.TraceIdentifier,
             ValidationErrors = errors
         });

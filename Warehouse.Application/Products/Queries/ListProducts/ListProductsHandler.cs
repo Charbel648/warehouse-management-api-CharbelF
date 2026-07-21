@@ -26,7 +26,7 @@ public class ListProductsHandler : IRequestHandler<ListProductsQuery, List<Produ
         ListProductsQuery request,
         CancellationToken cancellationToken)
     {
-        string cacheKey = CacheKeys.Products(request.OnlyAvailable);
+        string cacheKey = CacheKeys.ProductListByAvailability(request.OnlyAvailable);
 
         var cachedProducts = await _cacheService.GetAsync<List<ProductViewModel>>(
             cacheKey,
@@ -59,3 +59,4 @@ public class ListProductsHandler : IRequestHandler<ListProductsQuery, List<Produ
         return result;
     }
 }
+
