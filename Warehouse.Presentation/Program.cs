@@ -1,11 +1,15 @@
 ﻿using System.Globalization;
+using System.Security.Claims;
 using Hangfire;
 using Hangfire.MemoryStorage;
 using HealthChecks.UI.Client;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Serilog;
 using Warehouse.Application.BackgroundJobs;
 using Warehouse.Application.Common.Caching;
@@ -17,6 +21,7 @@ using Warehouse.Infrastructure.Persistence;
 using Warehouse.Infrastructure.Repositories;
 using Warehouse.Presentation.Filters;
 using Warehouse.Presentation.Middleware;
+using Warehouse.Presentation.Security;
 using Warehouse.Presentation.Swagger;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -36,6 +41,7 @@ builder.Host.UseSerilog((context, services, configuration) =>
 
 string? warehouseConnectionString = builder.Configuration.GetConnectionString("WarehouseDb");
 string? redisConnectionString = builder.Configuration.GetConnectionString("Redis");
+string firebaseProjectId = builder.Configuration["Firebase:ProjectId"] ?? string.Empty;
 
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
@@ -73,9 +79,21 @@ builder.Services.AddControllers(options =>
 });
 
 builder.Services.AddEndpointsApiExplorer();
+
 builder.Services.AddSwaggerGen(options =>
 {
     options.OperationFilter<AcceptLanguageHeaderOperationFilter>();
+    options.OperationFilter<FirebaseBearerSecurityOperationFilter>();
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "Enter Firebase ID token as: Bearer {token}",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
 });
 
 builder.Services.AddDbContext<WarehouseDbContext>(options =>
@@ -87,6 +105,60 @@ builder.Services.AddStackExchangeRedisCache(options =>
 {
     options.Configuration = redisConnectionString;
     options.InstanceName = "WarehouseApi_";
+});
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.Authority = $"https://securetoken.google.com/{firebaseProjectId}";
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidIssuer = $"https://securetoken.google.com/{firebaseProjectId}",
+            ValidateAudience = true,
+            ValidAudience = firebaseProjectId,
+            ValidateLifetime = true,
+            RoleClaimType = "role",
+            NameClaimType = "user_id"
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnTokenValidated = context =>
+            {
+                ClaimsIdentity? identity = context.Principal?.Identity as ClaimsIdentity;
+
+                string? firebaseUid = context.Principal?.FindFirstValue("user_id")
+                                      ?? context.Principal?.FindFirstValue(ClaimTypes.NameIdentifier)
+                                      ?? context.Principal?.FindFirstValue("sub");
+
+                if (!string.IsNullOrWhiteSpace(firebaseUid)
+                    && identity != null
+                    && !identity.HasClaim(claim => claim.Type == "firebase_uid"))
+                {
+                    identity.AddClaim(new Claim("firebase_uid", firebaseUid));
+                }
+
+                return Task.CompletedTask;
+            }
+        };
+    });
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy(WarehousePolicies.WarehouseReader, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireAssertion(context =>
+            context.User.IsInRole(WarehouseRoles.Admin)
+            || context.User.IsInRole(WarehouseRoles.User));
+    });
+
+    options.AddPolicy(WarehousePolicies.WarehouseAdmin, policy =>
+    {
+        policy.RequireAuthenticatedUser();
+        policy.RequireRole(WarehouseRoles.Admin);
+    });
 });
 
 builder.Services.AddHealthChecks()
@@ -142,6 +214,9 @@ app.UseSwagger();
 app.UseSwaggerUI();
 
 app.UseStaticFiles();
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 
