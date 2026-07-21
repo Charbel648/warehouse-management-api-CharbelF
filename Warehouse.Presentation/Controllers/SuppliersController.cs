@@ -90,6 +90,31 @@ public class SuppliersController : ControllerBase
         if (!Guid.TryParse(id, out _))
             throw new BusinessRuleException($"Invalid {resourceName} id", $"invalid_{resourceName}_id");
     }
+
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
+    [HttpPost("{id:guid}/documents")]
+    [Consumes("multipart/form-data")]
+    public async Task<ActionResult> UploadSupplierDocument(
+        [FromRoute] Guid id,
+        [FromForm] UploadSupplierDocumentRequest request,
+        CancellationToken cancellationToken)
+    {
+        await using Stream content = request.Document.OpenReadStream();
+
+        var response = await _mediator.Send(new UploadSupplierDocumentCommand
+        {
+            SupplierId = id.ToString(),
+            Content = content,
+            FileName = request.Document.FileName,
+            ContentType = request.Document.ContentType,
+            SizeInBytes = request.Document.Length
+        }, cancellationToken);
+
+        return Ok(response);
+    }
 }
+
+
+
 
 
