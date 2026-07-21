@@ -15,4 +15,9 @@ public interface IProductRepository
     Task UpdateAsync(Product product);
 
     Task<bool> SkuExistsAsync(string sku);
+
+    Task<List<Product>> GetExpiredOrExpiringProductsAsync(
+        DateTime currentDate,
+        DateTime expiringLimitDate,
+        CancellationToken cancellationToken);
 }

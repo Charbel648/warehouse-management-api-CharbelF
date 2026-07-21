@@ -1,11 +1,20 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Extensions.Localization;
+using Warehouse.Presentation.Resources;
 using Warehouse.Presentation.Responses;
 
 namespace Warehouse.Presentation.Filters;
 
 public class ModelValidationFilter : IActionFilter
 {
+    private readonly IStringLocalizer<SharedResources> _localizer;
+
+    public ModelValidationFilter(IStringLocalizer<SharedResources> localizer)
+    {
+        _localizer = localizer;
+    }
+
     public void OnActionExecuting(ActionExecutingContext context)
     {
         if (context.ModelState.IsValid)
@@ -24,7 +33,7 @@ public class ModelValidationFilter : IActionFilter
         context.Result = new BadRequestObjectResult(new ApiErrorResponse
         {
             ErrorCode = "validation_error",
-            Message = "One or more validation errors occurred",
+            Message = _localizer[SharedResources.ValidationError].Value,
             TraceId = context.HttpContext.TraceIdentifier,
             ValidationErrors = errors
         });
