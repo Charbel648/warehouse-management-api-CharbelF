@@ -2,7 +2,7 @@
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Warehouse.Application.Products.Commands.AddProductImage;
+using Warehouse.Application.Files.Commands.UploadProductImage;
 using Warehouse.Application.Products.Commands.ArchiveProduct;
 using Warehouse.Application.Products.Commands.AssignSupplierToProduct;
 using Warehouse.Application.Products.Commands.CreateProduct;
@@ -22,14 +22,10 @@ namespace Warehouse.Presentation.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IWebHostEnvironment _environment;
 
-    public ProductsController(
-        IMediator mediator,
-        IWebHostEnvironment environment)
+    public ProductsController(IMediator mediator)
     {
         _mediator = mediator;
-        _environment = environment;
     }
 
     [Authorize(Policy = WarehousePolicies.WarehouseReader)]
@@ -174,45 +170,16 @@ public class ProductsController : ControllerBase
         [FromForm] UploadProductImageRequest request,
         CancellationToken cancellationToken)
     {
-        string productId = id.ToString();
+        await using Stream content = request.Image.OpenReadStream();
 
-        IFormFile image = request.Image;
-
-        if (image == null || image.Length == 0)
-            throw new BusinessRuleException("Image is required");
-
-        long maxSize = 2 * 1024 * 1024;
-
-        if (image.Length > maxSize)
-            throw new BusinessRuleException("Image size cannot be more than 2 MB");
-
-        string extension = Path.GetExtension(image.FileName).ToLowerInvariant();
-
-        if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
-            throw new BusinessRuleException("Only JPG and PNG images are allowed");
-
-        string webRootPath = _environment.WebRootPath
-                             ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-        string uploadsFolder = Path.Combine(webRootPath, "uploads");
-
-        Directory.CreateDirectory(uploadsFolder);
-
-        string fileName = $"{Guid.NewGuid()}{extension}";
-        string fullPath = Path.Combine(uploadsFolder, fileName);
-
-        await using FileStream stream = new FileStream(fullPath, FileMode.Create);
-        await image.CopyToAsync(stream, cancellationToken);
-
-        var response = await _mediator.Send(new AddProductImageCommand
+        var response = await _mediator.Send(new UploadProductImageCommand
         {
-            ProductId = productId,
-            FileName = fileName,
-            FilePath = $"/uploads/{fileName}"
+            ProductId = id.ToString(),
+            Content = content,
+            FileName = request.Image.FileName,
+            ContentType = request.Image.ContentType,
+            SizeInBytes = request.Image.Length
         }, cancellationToken);
-
-        if (response == null)
-            throw new NotFoundException("Product", productId);
 
         return Ok(response);
     }
@@ -258,4 +225,3 @@ public class ProductsController : ControllerBase
         return Ok(response);
     }
 }
-

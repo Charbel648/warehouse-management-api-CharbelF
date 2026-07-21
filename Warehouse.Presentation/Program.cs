@@ -10,6 +10,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Warehouse.Presentation.Services;
+using Warehouse.Infrastructure.Storage;
+using Warehouse.Application.Common.Storage;
+using Warehouse.Application.Common.Auth;
+using Minio;
 using Serilog;
 using Warehouse.Application.BackgroundJobs;
 using Warehouse.Application.Common.Caching;
@@ -71,6 +76,8 @@ builder.Services.Configure<RequestLocalizationOptions>(options =>
         new QueryStringRequestCultureProvider()
     };
 });
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddControllers(options =>
 {
@@ -161,6 +168,23 @@ builder.Services.AddAuthorization(options =>
     });
 });
 
+
+builder.Services.AddSingleton<IMinioClient>(serviceProvider =>
+{
+    var configuration = serviceProvider.GetRequiredService<IConfiguration>();
+
+    string endpoint = configuration["Minio:Endpoint"] ?? "localhost:9000";
+    string accessKey = configuration["Minio:AccessKey"] ?? throw new InvalidOperationException("MinIO access key is missing");
+    string secretKey = configuration["Minio:SecretKey"] ?? throw new InvalidOperationException("MinIO secret key is missing");
+    bool useSsl = bool.TryParse(configuration["Minio:UseSsl"], out bool parsedUseSsl) && parsedUseSsl;
+
+    return new MinioClient()
+        .WithEndpoint(endpoint)
+        .WithCredentials(accessKey, secretKey)
+        .WithSSL(useSsl)
+        .Build();
+});
+
 builder.Services.AddHealthChecks()
     .AddNpgSql(
         warehouseConnectionString ?? string.Empty,
@@ -187,6 +211,9 @@ builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<IProductReportRepository, ProductReportRepository>();
 builder.Services.AddScoped<IInventoryDashboardRepository, InventoryDashboardRepository>();
 builder.Services.AddScoped<ICacheService, RedisCacheService>();
+builder.Services.AddScoped<IObjectStorageService, MinioObjectStorageService>();
+builder.Services.AddScoped<IWarehouseFileRepository, WarehouseFileRepository>();
+builder.Services.AddScoped<ICurrentUserService, HttpCurrentUserService>();
 
 builder.Services.AddScoped<ModelValidationFilter>();
 builder.Services.AddScoped<ActionLoggingFilter>();
@@ -246,3 +273,5 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+

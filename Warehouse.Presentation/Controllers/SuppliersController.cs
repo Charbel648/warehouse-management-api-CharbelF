@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.AspNetCore.Authorization;
+using Warehouse.Application.Files.Commands.UploadSupplierDocument;
 using Microsoft.AspNetCore.Mvc;
 using Warehouse.Application.Suppliers.Commands.CreateSupplier;
 using Warehouse.Application.Suppliers.Commands.DeactivateSupplier;
@@ -90,4 +91,5 @@ public class SuppliersController : ControllerBase
             throw new BusinessRuleException($"Invalid {resourceName} id", $"invalid_{resourceName}_id");
     }
 }
+
 
