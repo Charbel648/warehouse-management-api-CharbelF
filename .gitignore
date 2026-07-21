@@ -114,3 +114,7 @@ coverage.xml
 # =========================
 publish/
 PublishProfiles/
+.env
+firebase-service-account*.json
+serviceAccountKey.json
+*.firebase-adminsdk*.json
