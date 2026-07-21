@@ -1,4 +1,5 @@
-﻿using System.Globalization;
+﻿using System.IdentityModel.Tokens.Jwt;
+using System.Globalization;
 using System.Security.Claims;
 using Hangfire;
 using Hangfire.MemoryStorage;
@@ -9,6 +10,8 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Protocols;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Microsoft.OpenApi.Models;
 using Warehouse.Presentation.Services;
 using Warehouse.Infrastructure.Storage;
@@ -28,6 +31,8 @@ using Warehouse.Presentation.Filters;
 using Warehouse.Presentation.Middleware;
 using Warehouse.Presentation.Security;
 using Warehouse.Presentation.Swagger;
+using System.Security.Cryptography.X509Certificates;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -47,7 +52,6 @@ builder.Host.UseSerilog((context, services, configuration) =>
 string? warehouseConnectionString = builder.Configuration.GetConnectionString("WarehouseDb");
 string? redisConnectionString = builder.Configuration.GetConnectionString("Redis");
 string firebaseProjectId = builder.Configuration["Firebase:ProjectId"] ?? string.Empty;
-
 builder.Services.Configure<ApiBehaviorOptions>(options =>
 {
     options.SuppressModelStateInvalidFilter = true;
@@ -94,7 +98,7 @@ builder.Services.AddSwaggerGen(options =>
 
     options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
-        Description = "Enter Firebase ID token as: Bearer {token}",
+        Description = "Paste Firebase ID token only. Do not write Bearer because Swagger adds it automatically.",
         Name = "Authorization",
         In = ParameterLocation.Header,
         Type = SecuritySchemeType.Http,
@@ -114,19 +118,75 @@ builder.Services.AddStackExchangeRedisCache(options =>
     options.InstanceName = "WarehouseApi_";
 });
 
+if (string.IsNullOrWhiteSpace(firebaseProjectId))
+{
+    throw new InvalidOperationException("Firebase ProjectId is missing.");
+}
+
+JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
+JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = $"https://securetoken.google.com/{firebaseProjectId}";
+        string issuer = $"https://securetoken.google.com/{firebaseProjectId}";
+        string firebaseKeysUrl = "https://www.googleapis.com/robot/v1/metadata/x509/securetoken@system.gserviceaccount.com";
+
+        options.RequireHttpsMetadata = true;
+        options.IncludeErrorDetails = true;
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
-            ValidIssuer = $"https://securetoken.google.com/{firebaseProjectId}",
+            ValidIssuer = issuer,
+
             ValidateAudience = true,
             ValidAudience = firebaseProjectId,
+
             ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+
             RoleClaimType = "role",
-            NameClaimType = "user_id"
+            NameClaimType = "user_id",
+
+            IssuerSigningKeyResolver = (token, securityToken, kid, validationParameters) =>
+            {
+                if (string.IsNullOrWhiteSpace(kid))
+                {
+                    return Array.Empty<SecurityKey>();
+                }
+
+                using HttpClient httpClient = new HttpClient();
+
+                string json = httpClient
+                    .GetStringAsync(firebaseKeysUrl)
+                    .GetAwaiter()
+                    .GetResult();
+
+                Dictionary<string, string>? certificates =
+                    System.Text.Json.JsonSerializer.Deserialize<Dictionary<string, string>>(json);
+
+                if (certificates == null)
+                {
+                    return Array.Empty<SecurityKey>();
+                }
+
+                if (!certificates.TryGetValue(kid, out string? certificatePem))
+                {
+                    return Array.Empty<SecurityKey>();
+                }
+
+                X509Certificate2 certificate = X509Certificate2.CreateFromPem(certificatePem);
+
+                return new[]
+                {
+                    new X509SecurityKey(certificate)
+                    {
+                        KeyId = kid
+                    }
+                };
+            },
+
+            ClockSkew = TimeSpan.FromMinutes(5)
         };
 
         options.Events = new JwtBearerEvents
@@ -150,25 +210,29 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             }
         };
     });
-
 builder.Services.AddAuthorization(options =>
 {
     options.AddPolicy(WarehousePolicies.WarehouseReader, policy =>
     {
         policy.RequireAuthenticatedUser();
         policy.RequireAssertion(context =>
-            context.User.IsInRole(WarehouseRoles.Admin)
+            context.User.HasClaim("role", WarehouseRoles.Admin)
+            || context.User.HasClaim("role", WarehouseRoles.User)
+            || context.User.HasClaim(ClaimTypes.Role, WarehouseRoles.Admin)
+            || context.User.HasClaim(ClaimTypes.Role, WarehouseRoles.User)
+            || context.User.IsInRole(WarehouseRoles.Admin)
             || context.User.IsInRole(WarehouseRoles.User));
     });
 
     options.AddPolicy(WarehousePolicies.WarehouseAdmin, policy =>
     {
         policy.RequireAuthenticatedUser();
-        policy.RequireRole(WarehouseRoles.Admin);
+        policy.RequireAssertion(context =>
+            context.User.HasClaim("role", WarehouseRoles.Admin)
+            || context.User.HasClaim(ClaimTypes.Role, WarehouseRoles.Admin)
+            || context.User.IsInRole(WarehouseRoles.Admin));
     });
 });
-
-
 builder.Services.AddSingleton<IMinioClient>(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
@@ -273,5 +337,11 @@ finally
 {
     Log.CloseAndFlush();
 }
+
+
+
+
+
+
 
 

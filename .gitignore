@@ -118,3 +118,17 @@ PublishProfiles/
 firebase-service-account*.json
 serviceAccountKey.json
 *.firebase-adminsdk*.json
+firebase-service-account.json
+firebase-service-account.json
+firebase-service-account*.json
+*.firebase-adminsdk*.json
+
+# Firebase local admin tools
+firebase-tools/
+node_modules/
+package.json
+package-lock.json
+firebase-service-account.json
+firebase-service-account*.json
+*.firebase-adminsdk*.json
+.env
