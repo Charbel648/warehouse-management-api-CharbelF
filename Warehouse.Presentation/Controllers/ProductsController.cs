@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Warehouse.Application.Products.Commands.AddProductImage;
 using Warehouse.Application.Products.Commands.ArchiveProduct;
@@ -12,6 +13,7 @@ using Warehouse.Application.Products.Queries.ListProducts;
 using Warehouse.Application.Products.Queries.SearchProducts;
 using Warehouse.Domain.Exceptions;
 using Warehouse.Presentation.Contracts;
+using Warehouse.Presentation.Security;
 
 namespace Warehouse.Presentation.Controllers;
 
@@ -30,6 +32,7 @@ public class ProductsController : ControllerBase
         _environment = environment;
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
     [HttpGet]
     public async Task<ActionResult> GetProducts(
         [FromQuery] bool onlyAvailable = false,
@@ -43,6 +46,7 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult> GetProduct(
         [FromRoute] Guid id,
@@ -61,6 +65,7 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
     [HttpGet("search")]
     public async Task<ActionResult> SearchProducts(
         [FromQuery] string? name,
@@ -99,6 +104,7 @@ public class ProductsController : ControllerBase
         });
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpPost]
     public async Task<ActionResult> AddProduct(
         [FromBody] CreateProductRequest request,
@@ -118,6 +124,7 @@ public class ProductsController : ControllerBase
         return CreatedAtAction(nameof(GetProduct), new { id = response.Id }, response);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpPut("{id:guid}/quantity")]
     public async Task<ActionResult> UpdateQuantity(
         [FromRoute] Guid id,
@@ -138,6 +145,7 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpPut("{id:guid}/price")]
     public async Task<ActionResult> UpdatePrice(
         [FromRoute] Guid id,
@@ -158,6 +166,7 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpPost("{id:guid}/image")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult> UploadProductImage(
@@ -208,6 +217,7 @@ public class ProductsController : ControllerBase
         return Ok(response);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpDelete("{id:guid}")]
     public async Task<ActionResult> DeleteProduct(
         [FromRoute] Guid id,
@@ -226,6 +236,7 @@ public class ProductsController : ControllerBase
         return Ok(product);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpPost("{id:guid}/assign-supplier/{supplierId:guid}")]
     public async Task<ActionResult> AssignSupplier(
         [FromRoute] Guid id,
@@ -247,3 +258,4 @@ public class ProductsController : ControllerBase
         return Ok(response);
     }
 }
+

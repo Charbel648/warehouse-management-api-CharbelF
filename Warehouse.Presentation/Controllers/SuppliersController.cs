@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Warehouse.Application.Suppliers.Commands.CreateSupplier;
 using Warehouse.Application.Suppliers.Commands.DeactivateSupplier;
@@ -6,6 +7,7 @@ using Warehouse.Application.Suppliers.Queries.GetSupplierById;
 using Warehouse.Application.Suppliers.Queries.ListSuppliers;
 using Warehouse.Domain.Exceptions;
 using Warehouse.Presentation.Contracts;
+using Warehouse.Presentation.Security;
 
 namespace Warehouse.Presentation.Controllers;
 
@@ -20,6 +22,7 @@ public class SuppliersController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
     [HttpGet]
     public async Task<ActionResult> GetSuppliers(CancellationToken cancellationToken)
     {
@@ -46,6 +49,7 @@ public class SuppliersController : ControllerBase
         return Ok(supplier);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpPost]
     public async Task<ActionResult> AddSupplier(
         [FromBody] CreateSupplierRequest request,
@@ -86,3 +90,4 @@ public class SuppliersController : ControllerBase
             throw new BusinessRuleException($"Invalid {resourceName} id", $"invalid_{resourceName}_id");
     }
 }
+

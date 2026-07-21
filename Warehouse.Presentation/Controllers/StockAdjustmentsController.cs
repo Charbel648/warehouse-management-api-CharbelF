@@ -1,7 +1,9 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Warehouse.Application.StockAdjustments.Commands.AdjustStock;
 using Warehouse.Presentation.Contracts;
+using Warehouse.Presentation.Security;
 
 namespace Warehouse.Presentation.Controllers;
 
@@ -16,6 +18,7 @@ public class StockAdjustmentsController : ControllerBase
         _mediator = mediator;
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
     [HttpPost]
     public async Task<ActionResult> AdjustStock(
         [FromBody] StockAdjustmentRequest request,
@@ -31,3 +34,4 @@ public class StockAdjustmentsController : ControllerBase
         return Ok(response);
     }
 }
+
