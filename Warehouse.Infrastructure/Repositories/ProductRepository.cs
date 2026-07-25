@@ -63,4 +63,17 @@ public class ProductRepository : IProductRepository
         return await _context.Products
             .AnyAsync(p => EF.Functions.ILike(p.SKU, sku));
     }
+
+    public async Task<List<Product>> GetExpiredOrExpiringProductsAsync(
+        DateTime currentDate,
+        DateTime expiringLimitDate,
+        CancellationToken cancellationToken)
+    {
+        return await _context.Products
+            .Where(product =>
+                !product.IsArchived
+                && product.ExpiryDate <= expiringLimitDate)
+            .OrderBy(product => product.ExpiryDate)
+            .ToListAsync(cancellationToken);
+    }
 }

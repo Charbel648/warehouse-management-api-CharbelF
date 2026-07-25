@@ -1,7 +1,8 @@
 ﻿using System.Globalization;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Warehouse.Application.Products.Commands.AddProductImage;
+using Warehouse.Application.Files.Commands.UploadProductImage;
 using Warehouse.Application.Products.Commands.ArchiveProduct;
 using Warehouse.Application.Products.Commands.AssignSupplierToProduct;
 using Warehouse.Application.Products.Commands.CreateProduct;
@@ -10,7 +11,9 @@ using Warehouse.Application.Products.Commands.UpdateProductQuantity;
 using Warehouse.Application.Products.Queries.GetProductById;
 using Warehouse.Application.Products.Queries.ListProducts;
 using Warehouse.Application.Products.Queries.SearchProducts;
+using Warehouse.Domain.Exceptions;
 using Warehouse.Presentation.Contracts;
+using Warehouse.Presentation.Security;
 
 namespace Warehouse.Presentation.Controllers;
 
@@ -19,46 +22,59 @@ namespace Warehouse.Presentation.Controllers;
 public class ProductsController : ControllerBase
 {
     private readonly IMediator _mediator;
-    private readonly IWebHostEnvironment _environment;
 
-    public ProductsController(
-        IMediator mediator,
-        IWebHostEnvironment environment)
+    public ProductsController(IMediator mediator)
     {
         _mediator = mediator;
-        _environment = environment;
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
     [HttpGet]
-    public async Task<ActionResult> GetProducts([FromQuery] bool onlyAvailable = false)
+    public async Task<ActionResult> GetProducts(
+        [FromQuery] bool onlyAvailable = false,
+        CancellationToken cancellationToken = default)
     {
         var products = await _mediator.Send(new ListProductsQuery
         {
             OnlyAvailable = onlyAvailable
-        });
+        }, cancellationToken);
 
         return Ok(products);
     }
 
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
+    [HttpGet("{id:guid}")]
+    public async Task<ActionResult> GetProduct(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
+    {
+        string productId = id.ToString();
+
+        var product = await _mediator.Send(new GetProductByIdQuery
+        {
+            ProductId = productId
+        }, cancellationToken);
+
+        if (product == null)
+            throw new NotFoundException("Product", productId);
+
+        return Ok(product);
+    }
+
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
     [HttpGet("search")]
     public async Task<ActionResult> SearchProducts(
         [FromQuery] string? name,
-        [FromQuery] string? supplier)
+        [FromQuery] string? supplier,
+        CancellationToken cancellationToken)
     {
-        try
+        var products = await _mediator.Send(new SearchProductsQuery
         {
-            var products = await _mediator.Send(new SearchProductsQuery
-            {
-                Name = name,
-                Supplier = supplier
-            });
+            Name = name,
+            Supplier = supplier
+        }, cancellationToken);
 
-            return Ok(products);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(products);
     }
 
     [HttpGet("server-time")]
@@ -84,214 +100,128 @@ public class ProductsController : ControllerBase
         });
     }
 
-    [HttpGet("{id}")]
-    public async Task<ActionResult> GetProduct([FromRoute] string id)
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
+    [HttpPost]
+    public async Task<ActionResult> AddProduct(
+        [FromBody] CreateProductRequest request,
+        CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid product id");
-
-        var product = await _mediator.Send(new GetProductByIdQuery
+        var response = await _mediator.Send(new CreateProductCommand
         {
-            ProductId = id
-        });
+            Name = request.Name,
+            SKU = request.SKU,
+            Description = request.Description,
+            Price = request.Price,
+            QuantityInStock = request.QuantityInStock,
+            SupplierName = request.SupplierName,
+            ExpiryDate = request.ExpiryDate
+        }, cancellationToken);
+
+        return CreatedAtAction(nameof(GetProduct), new { id = response.Id }, response);
+    }
+
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
+    [HttpPut("{id:guid}/quantity")]
+    public async Task<ActionResult> UpdateQuantity(
+        [FromRoute] Guid id,
+        [FromBody] UpdateProductQuantityRequest request,
+        CancellationToken cancellationToken)
+    {
+        string productId = id.ToString();
+
+        var product = await _mediator.Send(new UpdateProductQuantityCommand
+        {
+            ProductId = productId,
+            QuantityInStock = request.QuantityInStock
+        }, cancellationToken);
 
         if (product == null)
-            return NotFound("Product not found");
+            throw new NotFoundException("Product", productId);
 
         return Ok(product);
     }
 
-    [HttpPost]
-    public async Task<ActionResult> AddProduct([FromBody] CreateProductRequest request)
-    {
-        try
-        {
-            var response = await _mediator.Send(new CreateProductCommand
-            {
-                Name = request.Name,
-                SKU = request.SKU,
-                Description = request.Description,
-                Price = request.Price,
-                QuantityInStock = request.QuantityInStock,
-                SupplierName = request.SupplierName,
-                ExpiryDate = request.ExpiryDate
-            });
-
-            return CreatedAtAction(nameof(GetProduct), new { id = response.Id }, response);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-
-    [HttpPut("{id}/quantity")]
-    public async Task<ActionResult> UpdateQuantity(
-        [FromRoute] string id,
-        [FromBody] UpdateProductQuantityRequest request)
-    {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid product id");
-
-        try
-        {
-            var product = await _mediator.Send(new UpdateProductQuantityCommand
-            {
-                ProductId = id,
-                QuantityInStock = request.QuantityInStock
-            });
-
-            if (product == null)
-                return NotFound("Product not found");
-
-            return Ok(product);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-    }
-
-    [HttpPut("{id}/price")]
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
+    [HttpPut("{id:guid}/price")]
     public async Task<ActionResult> UpdatePrice(
-        [FromRoute] string id,
-        [FromBody] UpdateProductPriceRequest request)
+        [FromRoute] Guid id,
+        [FromBody] UpdateProductPriceRequest request,
+        CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid product id");
+        string productId = id.ToString();
 
-        try
+        var product = await _mediator.Send(new UpdateProductPriceCommand
         {
-            var product = await _mediator.Send(new UpdateProductPriceCommand
-            {
-                ProductId = id,
-                Price = request.Price
-            });
+            ProductId = productId,
+            Price = request.Price
+        }, cancellationToken);
 
-            if (product == null)
-                return NotFound("Product not found");
+        if (product == null)
+            throw new NotFoundException("Product", productId);
 
-            return Ok(product);
-        }
-        catch (ArgumentException ex)
-        {
-            return BadRequest(ex.Message);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(product);
     }
 
-    [HttpPost("{id}/image")]
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
+    [HttpPost("{id:guid}/image")]
     [Consumes("multipart/form-data")]
     public async Task<ActionResult> UploadProductImage(
-        [FromRoute] string id,
-        [FromForm] UploadProductImageRequest request)
+        [FromRoute] Guid id,
+        [FromForm] UploadProductImageRequest request,
+        CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid product id");
+        await using Stream content = request.Image.OpenReadStream();
 
-        IFormFile image = request.Image;
-
-        if (image == null || image.Length == 0)
-            return BadRequest("Image is required");
-
-        long maxSize = 2 * 1024 * 1024;
-
-        if (image.Length > maxSize)
-            return BadRequest("Image size cannot be more than 2 MB");
-
-        string extension = Path.GetExtension(image.FileName).ToLower();
-
-        if (extension != ".jpg" && extension != ".jpeg" && extension != ".png")
-            return BadRequest("Only JPG and PNG images are allowed");
-
-        string webRootPath = _environment.WebRootPath
-                             ?? Path.Combine(Directory.GetCurrentDirectory(), "wwwroot");
-
-        string uploadsFolder = Path.Combine(webRootPath, "uploads");
-
-        Directory.CreateDirectory(uploadsFolder);
-
-        string fileName = $"{Guid.NewGuid()}{extension}";
-        string fullPath = Path.Combine(uploadsFolder, fileName);
-
-        using FileStream stream = new FileStream(fullPath, FileMode.Create);
-        await image.CopyToAsync(stream);
-
-        try
+        var response = await _mediator.Send(new UploadProductImageCommand
         {
-            var response = await _mediator.Send(new AddProductImageCommand
-            {
-                ProductId = id,
-                FileName = fileName,
-                FilePath = $"/uploads/{fileName}"
-            });
+            ProductId = id.ToString(),
+            Content = content,
+            FileName = request.Image.FileName,
+            ContentType = request.Image.ContentType,
+            SizeInBytes = request.Image.Length
+        }, cancellationToken);
 
-            if (response == null)
-                return NotFound("Product not found");
-
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(response);
     }
 
-    [HttpDelete("{id}")]
-    public async Task<ActionResult> DeleteProduct([FromRoute] string id)
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
+    [HttpDelete("{id:guid}")]
+    public async Task<ActionResult> DeleteProduct(
+        [FromRoute] Guid id,
+        CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid product id");
+        string productId = id.ToString();
 
         var product = await _mediator.Send(new ArchiveProductCommand
         {
-            ProductId = id
-        });
+            ProductId = productId
+        }, cancellationToken);
 
         if (product == null)
-            return NotFound("Product not found");
+            throw new NotFoundException("Product", productId);
 
         return Ok(product);
     }
 
-    [HttpPost("{id}/assign-supplier/{supplierId}")]
+    [Authorize(Policy = WarehousePolicies.WarehouseAdmin)]
+    [HttpPost("{id:guid}/assign-supplier/{supplierId:guid}")]
     public async Task<ActionResult> AssignSupplier(
-        [FromRoute] string id,
-        [FromRoute] string supplierId)
+        [FromRoute] Guid id,
+        [FromRoute] Guid supplierId,
+        CancellationToken cancellationToken)
     {
-        if (!Guid.TryParse(id, out _))
-            return BadRequest("Invalid product id");
+        string productId = id.ToString();
+        string supplierIdValue = supplierId.ToString();
 
-        if (!Guid.TryParse(supplierId, out _))
-            return BadRequest("Invalid supplier id");
-
-        try
+        var response = await _mediator.Send(new AssignSupplierToProductCommand
         {
-            var response = await _mediator.Send(new AssignSupplierToProductCommand
-            {
-                ProductId = id,
-                SupplierId = supplierId
-            });
+            ProductId = productId,
+            SupplierId = supplierIdValue
+        }, cancellationToken);
 
-            if (response == null)
-                return NotFound("Product not found");
+        if (response == null)
+            throw new NotFoundException("Product", productId);
 
-            return Ok(response);
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ex.Message);
-        }
+        return Ok(response);
     }
 }

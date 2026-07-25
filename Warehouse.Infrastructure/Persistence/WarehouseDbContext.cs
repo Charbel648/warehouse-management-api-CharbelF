@@ -16,7 +16,9 @@ public class WarehouseDbContext : DbContext
 
     public DbSet<ProductImage> ProductImages => Set<ProductImage>();
 
-    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    
+    public DbSet<WarehouseFile> WarehouseFiles => Set<WarehouseFile>();
+protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
@@ -129,6 +131,54 @@ public class WarehouseDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
         });
 
+
+        modelBuilder.Entity<WarehouseFile>(entity =>
+        {
+            entity.ToTable("WarehouseFiles");
+
+            entity.HasKey(file => file.FileId);
+
+            entity.Property(file => file.FileId)
+                .IsRequired();
+
+            entity.Property(file => file.RelatedEntityId)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(file => file.RelatedEntityType)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(file => file.FileCategory)
+                .IsRequired()
+                .HasMaxLength(50);
+
+            entity.Property(file => file.OriginalFileName)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            entity.Property(file => file.ObjectKey)
+                .IsRequired()
+                .HasMaxLength(500);
+
+            entity.Property(file => file.ContentType)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            entity.Property(file => file.SizeInBytes)
+                .IsRequired();
+
+            entity.Property(file => file.UploadedByFirebaseUid)
+                .IsRequired()
+                .HasMaxLength(150);
+
+            entity.Property(file => file.UploadedAt)
+                .IsRequired();
+
+            entity.HasIndex(file => file.RelatedEntityId);
+            entity.HasIndex(file => file.ObjectKey)
+                .IsUnique();
+        });
         SeedData(modelBuilder);
     }
 
@@ -249,3 +299,4 @@ public class WarehouseDbContext : DbContext
         );
     }
 }
+
