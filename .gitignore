@@ -132,3 +132,15 @@ firebase-service-account.json
 firebase-service-account*.json
 *.firebase-adminsdk*.json
 .env
+
+
+*.db
+*.db-shm
+*.db-wal
+
+Warehouse.Notifications/**/notifications.db
+Warehouse.Notifications/**/notifications.db-shm
+Warehouse.Notifications/**/notifications.db-wal
+
+
+test-supplier-document.pdf

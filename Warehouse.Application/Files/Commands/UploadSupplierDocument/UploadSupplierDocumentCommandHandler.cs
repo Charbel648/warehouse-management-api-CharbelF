@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Warehouse.Application.Common.Messaging;
+using MediatR;
 using Warehouse.Application.Common.Auth;
 using Warehouse.Application.Common.Storage;
 using Warehouse.Application.Files.ViewModels;
@@ -22,6 +23,7 @@ public class UploadSupplierDocumentCommandHandler
 
     private readonly ISupplierRepository _supplierRepository;
     private readonly IWarehouseFileRepository _warehouseFileRepository;
+    private readonly IWarehouseEventPublisher _warehouseEventPublisher;
     private readonly IObjectStorageService _objectStorageService;
     private readonly ICurrentUserService _currentUserService;
 
@@ -29,10 +31,12 @@ public class UploadSupplierDocumentCommandHandler
         ISupplierRepository supplierRepository,
         IWarehouseFileRepository warehouseFileRepository,
         IObjectStorageService objectStorageService,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IWarehouseEventPublisher warehouseEventPublisher)
     {
         _supplierRepository = supplierRepository;
         _warehouseFileRepository = warehouseFileRepository;
+        _warehouseEventPublisher = warehouseEventPublisher;
         _objectStorageService = objectStorageService;
         _currentUserService = currentUserService;
     }
@@ -92,7 +96,7 @@ public class UploadSupplierDocumentCommandHandler
 
     private static WarehouseFileViewModel ToViewModel(WarehouseFile file)
     {
-        return new WarehouseFileViewModel
+return new WarehouseFileViewModel
         {
             FileId = file.FileId,
             RelatedEntityId = file.RelatedEntityId,
@@ -105,3 +109,5 @@ public class UploadSupplierDocumentCommandHandler
         };
     }
 }
+
+

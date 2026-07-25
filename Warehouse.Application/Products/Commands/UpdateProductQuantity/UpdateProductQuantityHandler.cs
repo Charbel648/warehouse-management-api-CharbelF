@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Warehouse.Application.Common.Messaging;
+using MediatR;
 using Warehouse.Domain.Repositories;
 
 namespace Warehouse.Application.Products.Commands.UpdateProductQuantity;
@@ -6,10 +7,13 @@ namespace Warehouse.Application.Products.Commands.UpdateProductQuantity;
 public class UpdateProductQuantityHandler : IRequestHandler<UpdateProductQuantityCommand, UpdateProductQuantityResponse?>
 {
     private readonly IProductRepository _productRepository;
+    private readonly IWarehouseEventPublisher _warehouseEventPublisher;
 
-    public UpdateProductQuantityHandler(IProductRepository productRepository)
+    public UpdateProductQuantityHandler(IProductRepository productRepository,
+        IWarehouseEventPublisher warehouseEventPublisher)
     {
         _productRepository = productRepository;
+        _warehouseEventPublisher = warehouseEventPublisher;
     }
 
     public async Task<UpdateProductQuantityResponse?> Handle(
@@ -25,7 +29,28 @@ public class UpdateProductQuantityHandler : IRequestHandler<UpdateProductQuantit
 
         await _productRepository.UpdateAsync(product);
 
-        return new UpdateProductQuantityResponse
+        
+        int lowStockThreshold = 5;
+
+        if (product.QuantityInStock < lowStockThreshold)
+        {
+            await _warehouseEventPublisher.PublishAsync(
+                new WarehouseNotificationEvent
+                {
+                    EventType = "StockLowDetected",
+                    CorrelationId = CorrelationIdFactory.Create(),
+                    RelatedEntityId = product.Id,
+                    RelatedEntityType = "Product",
+                    Severity = "High",
+                    ProductId = product.Id,
+                    ProductName = product.Name,
+                    Quantity = product.QuantityInStock,
+                    Threshold = lowStockThreshold
+                },
+                "stock.low",
+                cancellationToken);
+        }
+return new UpdateProductQuantityResponse
         {
             Id = product.Id,
             Name = product.Name,
@@ -34,3 +59,4 @@ public class UpdateProductQuantityHandler : IRequestHandler<UpdateProductQuantit
         };
     }
 }
+
