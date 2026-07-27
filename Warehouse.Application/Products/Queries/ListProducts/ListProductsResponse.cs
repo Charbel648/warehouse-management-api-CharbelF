@@ -20,3 +20,4 @@ public class ListProductsResponse
 
     public DateTime CreatedAt { get; set; }
 }
+

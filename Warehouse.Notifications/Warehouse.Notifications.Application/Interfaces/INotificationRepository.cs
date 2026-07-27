@@ -18,3 +18,5 @@ public interface INotificationRepository
 
     Task SaveChangesAsync(CancellationToken cancellationToken);
 }
+
+

@@ -10,3 +10,4 @@ public class AdjustStockCommand : IRequest<AdjustStockResponse>
 
     public string Reason { get; set; } = string.Empty;
 }
+

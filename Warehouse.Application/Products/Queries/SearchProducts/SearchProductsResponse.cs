@@ -14,3 +14,4 @@ public class SearchProductsResponse
 
     public string SupplierName { get; set; } = string.Empty;
 }
+

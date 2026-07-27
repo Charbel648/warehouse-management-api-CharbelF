@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using Warehouse.Notifications.Infrastructure.Messaging;
+using System.Text;
 using System.Text.Json;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -6,10 +7,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
-using Warehouse.Notifications.Application.Events;
+using Warehouse.Notifications.Domain.Events;
 using Warehouse.Notifications.Application.Interfaces;
 
-namespace Warehouse.Notifications.Infrastructure.Messaging;
+namespace Warehouse.Notifications.Api.Messaging;
 
 public class RabbitMqWarehouseEventsConsumer : BackgroundService
 {
@@ -184,3 +185,7 @@ public class RabbitMqWarehouseEventsConsumer : BackgroundService
         _connection = null;
     }
 }
+
+
+
+

@@ -29,3 +29,4 @@ public enum StockMovementType
     StockOut,
     Adjustment
 }
+

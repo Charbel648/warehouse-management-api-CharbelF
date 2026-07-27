@@ -12,3 +12,4 @@ public class AssignSupplierToProductResponse
 
     public DateTime LastUpdatedAt { get; set; }
 }
+

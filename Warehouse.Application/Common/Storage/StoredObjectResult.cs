@@ -8,3 +8,4 @@ public class StoredObjectResult
 
     public long SizeInBytes { get; set; }
 }
+

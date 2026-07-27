@@ -8,3 +8,4 @@ public class UpdateProductPriceCommand : IRequest<UpdateProductPriceResponse?>
 
     public decimal Price { get; set; }
 }
+

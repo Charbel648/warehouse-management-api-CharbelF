@@ -15,3 +15,4 @@ public class UploadSupplierDocumentCommand : IRequest<WarehouseFileViewModel>
 
     public long SizeInBytes { get; set; }
 }
+

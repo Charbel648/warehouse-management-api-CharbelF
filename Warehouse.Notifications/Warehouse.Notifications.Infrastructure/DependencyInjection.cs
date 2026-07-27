@@ -3,7 +3,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Warehouse.Notifications.Application.Interfaces;
 using Warehouse.Notifications.Application.Services;
-using Warehouse.Notifications.Infrastructure.Messaging;
+
 using Warehouse.Notifications.Infrastructure.Persistence;
 using Warehouse.Notifications.Infrastructure.Repositories;
 
@@ -22,14 +22,15 @@ public static class DependencyInjection
         {
             options.UseSqlite(connectionString);
         });
-
-        services.Configure<RabbitMqOptions>(configuration.GetSection("RabbitMq"));
-
-        services.AddScoped<INotificationRepository, NotificationRepository>();
+services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<INotificationService, NotificationService>();
 
-        services.AddHostedService<RabbitMqWarehouseEventsConsumer>();
+        
 
         return services;
     }
 }
+
+
+
+

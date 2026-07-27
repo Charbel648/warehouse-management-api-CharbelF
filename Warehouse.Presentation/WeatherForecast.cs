@@ -1,4 +1,4 @@
-namespace Warehouse.Presentation;
+﻿namespace Warehouse.Presentation;
 
 public class WeatherForecast
 {
@@ -10,3 +10,4 @@ public class WeatherForecast
 
     public string? Summary { get; set; }
 }
+

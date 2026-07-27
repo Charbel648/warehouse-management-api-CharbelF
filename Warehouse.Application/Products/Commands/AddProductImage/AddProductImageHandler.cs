@@ -40,3 +40,4 @@ public class AddProductImageHandler : IRequestHandler<AddProductImageCommand, Ad
         };
     }
 }
+

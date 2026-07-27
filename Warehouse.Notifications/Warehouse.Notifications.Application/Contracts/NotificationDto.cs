@@ -14,3 +14,5 @@ public class NotificationDto
     public DateTime CreatedAtUtc { get; set; }
     public DateTime? ReadAtUtc { get; set; }
 }
+
+

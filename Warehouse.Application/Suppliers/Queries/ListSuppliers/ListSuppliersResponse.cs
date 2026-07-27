@@ -14,3 +14,4 @@ public class ListSuppliersResponse
 
     public bool IsActive { get; set; }
 }
+

@@ -24,3 +24,4 @@ public class CreateProductResponse
 
     public DateTime LastUpdatedAt { get; set; }
 }
+

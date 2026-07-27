@@ -75,3 +75,4 @@ public class InventoryDashboardRepository : IInventoryDashboardRepository
             .ToListAsync(cancellationToken);
     }
 }
+

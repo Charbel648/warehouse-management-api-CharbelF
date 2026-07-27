@@ -31,3 +31,4 @@ public class WarehouseFilesController : ControllerBase
         return File(result.Content, result.ContentType, result.FileName);
     }
 }
+

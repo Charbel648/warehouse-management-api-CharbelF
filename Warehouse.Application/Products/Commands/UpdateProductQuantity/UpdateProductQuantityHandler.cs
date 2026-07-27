@@ -38,7 +38,7 @@ public class UpdateProductQuantityHandler : IRequestHandler<UpdateProductQuantit
                 new WarehouseNotificationEvent
                 {
                     EventType = "StockLowDetected",
-                    CorrelationId = CorrelationIdFactory.Create(),
+                    CorrelationId = Guid.NewGuid().ToString(),
                     RelatedEntityId = product.Id,
                     RelatedEntityType = "Product",
                     Severity = "High",
@@ -59,4 +59,5 @@ return new UpdateProductQuantityResponse
         };
     }
 }
+
 

@@ -50,3 +50,5 @@ public class NotificationRecord
         ReadAtUtc = DateTime.UtcNow;
     }
 }
+
+

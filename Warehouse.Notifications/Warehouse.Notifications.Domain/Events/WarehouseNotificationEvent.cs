@@ -1,4 +1,4 @@
-﻿namespace Warehouse.Notifications.Application.Events;
+﻿namespace Warehouse.Notifications.Domain.Events;
 
 public class WarehouseNotificationEvent
 {
@@ -20,3 +20,6 @@ public class WarehouseNotificationEvent
     public string? FileCategory { get; set; }
     public string? UploadedByFirebaseUid { get; set; }
 }
+
+
+

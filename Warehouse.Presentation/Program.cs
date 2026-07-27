@@ -34,7 +34,7 @@ string firebaseProjectId =
 string redisConnectionString =
     builder.Configuration.GetConnectionString("Redis")
     ?? builder.Configuration["Redis:ConnectionString"]
-    ?? "localhost:6379";
+    ?? throw new InvalidOperationException("Redis connection string is missing");
 
 
 builder.Services.AddControllers();
@@ -79,9 +79,17 @@ builder.Services.AddSingleton<IMinioClient>(serviceProvider =>
 {
     var configuration = serviceProvider.GetRequiredService<IConfiguration>();
 
-    string endpoint = configuration["Minio:Endpoint"] ?? "localhost:9000";
-    string accessKey = configuration["Minio:AccessKey"] ?? throw new InvalidOperationException("MinIO access key is missing");
-    string secretKey = configuration["Minio:SecretKey"] ?? throw new InvalidOperationException("MinIO secret key is missing");
+    string endpoint =
+    configuration["Minio:Endpoint"]
+    ?? throw new InvalidOperationException("MinIO endpoint is missing");
+
+    string accessKey =
+    configuration["Minio:AccessKey"]
+    ?? throw new InvalidOperationException("MinIO access key is missing");
+
+    string secretKey =
+    configuration["Minio:SecretKey"]
+    ?? throw new InvalidOperationException("MinIO secret key is missing");
     bool useSsl = bool.TryParse(configuration["Minio:UseSsl"], out bool parsedUseSsl) && parsedUseSsl;
 
     return new MinioClient()
@@ -214,6 +222,7 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
 
 
 

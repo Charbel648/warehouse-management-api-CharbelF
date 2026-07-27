@@ -7,3 +7,4 @@ public interface IWarehouseEventPublisher
         string routingKey,
         CancellationToken cancellationToken);
 }
+

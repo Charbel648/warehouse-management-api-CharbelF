@@ -77,3 +77,4 @@ public class RabbitMqWarehouseEventPublisher : IWarehouseEventPublisher
         return Task.CompletedTask;
     }
 }
+

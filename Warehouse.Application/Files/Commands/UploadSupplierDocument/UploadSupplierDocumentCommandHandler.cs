@@ -74,6 +74,24 @@ public class UploadSupplierDocumentCommandHandler
 
         await _warehouseFileRepository.AddAsync(file, cancellationToken);
 
+        
+        await _warehouseEventPublisher.PublishAsync(
+            new WarehouseNotificationEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                EventTimeUtc = DateTime.UtcNow,
+                EventType = "WarehouseFileUploaded",
+                CorrelationId = Guid.NewGuid().ToString(),
+                RelatedEntityId = file.RelatedEntityId,
+                RelatedEntityType = file.RelatedEntityType,
+                Severity = "Information",
+                FileId = file.FileId,
+                FileName = file.OriginalFileName,
+                FileCategory = file.FileCategory,
+                UploadedByFirebaseUid = _currentUserService.FirebaseUid
+            },
+            "file.uploaded",
+            cancellationToken);
         return ToViewModel(file);
     }
 
@@ -109,5 +127,7 @@ return new WarehouseFileViewModel
         };
     }
 }
+
+
 
 

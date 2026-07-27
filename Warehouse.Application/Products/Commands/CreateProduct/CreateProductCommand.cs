@@ -18,3 +18,4 @@ public class CreateProductCommand : IRequest<CreateProductResponse>
 
     public DateTime ExpiryDate { get; set; }
 }
+

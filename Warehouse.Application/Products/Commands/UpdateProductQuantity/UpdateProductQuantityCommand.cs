@@ -8,3 +8,4 @@ public class UpdateProductQuantityCommand : IRequest<UpdateProductQuantityRespon
 
     public int QuantityInStock { get; set; }
 }
+

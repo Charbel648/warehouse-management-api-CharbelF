@@ -20,3 +20,4 @@ public class WarehouseNotificationEvent
     public string? FileCategory { get; set; }
     public string? UploadedByFirebaseUid { get; set; }
 }
+

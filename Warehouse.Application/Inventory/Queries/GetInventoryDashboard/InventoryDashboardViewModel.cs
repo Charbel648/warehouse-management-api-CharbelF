@@ -22,3 +22,4 @@ public class InventoryDashboardGraphPointViewModel
 
     public int Value { get; set; }
 }
+

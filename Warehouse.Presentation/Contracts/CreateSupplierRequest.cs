@@ -22,3 +22,4 @@ public class CreateSupplierRequest
     [RegularExpression(@"^[0-9+\-\s()]+$", ErrorMessage = "Invalid phone number format")]
     public string PhoneNumber { get; set; } = string.Empty;
 }
+

@@ -1,5 +1,5 @@
 ﻿using Warehouse.Notifications.Application.Contracts;
-using Warehouse.Notifications.Application.Events;
+using Warehouse.Notifications.Domain.Events;
 using Warehouse.Notifications.Application.Interfaces;
 using Warehouse.Notifications.Domain.Models;
 
@@ -137,3 +137,5 @@ public class NotificationService : INotificationService
         };
     }
 }
+
+

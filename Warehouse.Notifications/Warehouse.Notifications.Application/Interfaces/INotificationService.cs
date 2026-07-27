@@ -1,5 +1,5 @@
 ﻿using Warehouse.Notifications.Application.Contracts;
-using Warehouse.Notifications.Application.Events;
+using Warehouse.Notifications.Domain.Events;
 
 namespace Warehouse.Notifications.Application.Interfaces;
 
@@ -15,3 +15,5 @@ public interface INotificationService
 
     Task<NotificationDto?> MarkAsReadAsync(Guid id, CancellationToken cancellationToken);
 }
+
+

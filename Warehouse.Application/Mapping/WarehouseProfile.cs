@@ -27,3 +27,4 @@ public class WarehouseProfile : Profile
                 option => option.MapFrom(source => source.Products.Count));
     }
 }
+

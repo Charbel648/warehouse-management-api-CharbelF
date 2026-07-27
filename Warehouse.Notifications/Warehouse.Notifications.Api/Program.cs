@@ -1,4 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Warehouse.Notifications.Infrastructure.Messaging;
+using Warehouse.Notifications.Api.Messaging;
+using Microsoft.EntityFrameworkCore;
 using Warehouse.Notifications.Infrastructure;
 using Warehouse.Notifications.Infrastructure.Persistence;
 
@@ -11,6 +13,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddNotificationsInfrastructure(builder.Configuration);
 
+
+builder.Services.Configure<RabbitMqOptions>(builder.Configuration.GetSection("RabbitMq"));
+builder.Services.AddHostedService<RabbitMqWarehouseEventsConsumer>();
 var app = builder.Build();
 
 using (IServiceScope scope = app.Services.CreateScope())
@@ -27,3 +32,7 @@ app.UseHttpsRedirection();
 app.MapControllers();
 
 app.Run();
+
+
+
+
