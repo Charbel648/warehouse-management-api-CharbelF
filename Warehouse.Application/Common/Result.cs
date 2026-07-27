@@ -30,3 +30,4 @@ public class Result<T>
         };
     }
 }
+

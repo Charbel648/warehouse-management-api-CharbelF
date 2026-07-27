@@ -105,3 +105,26 @@ The product must not be archived.
 So in general, this is a hardened Warehouse Management API where users can manage products, suppliers, and stock adjustments.
 The project now supports creating, reading, updating, archiving, and assigning suppliers to products, while also including validation, consistent error responses, global exception handling, request tracking, action logging, async processing, an inventory dashboard, and validation metadata inspection using reflection.
 
+the warehouse system was extended with a separate Notification Service using RabbitMQ for asynchronous communication between services.
+
+The Warehouse API publishes business events when important actions happen, such as low stock detection or warehouse file uploads. The Notification Service consumes these events, stores notifications in its own database, and exposes endpoints to view and mark notifications as read.
+
+This follows a microservice-style communication pattern where services do not directly call each other or share the same notification database.
+
+The repository now contains two separate solutions:
+
+warehouse-management-api-CharbelF/
+├── warehouse_management.sln
+├── Warehouse.Domain/
+├── Warehouse.Application/
+├── Warehouse.Infrastructure/
+├── Warehouse.Presentation/
+│
+├── Warehouse.Notifications/
+│   ├── Warehouse.Notifications.sln
+│   ├── Warehouse.Notifications.Api/
+│   ├── Warehouse.Notifications.Domain/
+│   ├── Warehouse.Notifications.Application/
+│   └── Warehouse.Notifications.Infrastructure/
+│
+└── docker-compose.rabbitmq.yml

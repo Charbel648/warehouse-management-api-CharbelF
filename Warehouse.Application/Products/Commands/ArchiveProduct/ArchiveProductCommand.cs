@@ -6,3 +6,4 @@ public class ArchiveProductCommand : IRequest<ArchiveProductResponse?>
 {
     public string ProductId { get; set; } = string.Empty;
 }
+

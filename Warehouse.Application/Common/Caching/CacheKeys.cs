@@ -11,3 +11,4 @@ public static partial class CacheKeys
 
     public const string InventoryDashboardGraphs = "warehouse-management-api:inventory-dashboard:graphs:v1";
 }
+

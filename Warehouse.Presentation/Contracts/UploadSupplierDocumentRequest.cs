@@ -7,3 +7,4 @@ public class UploadSupplierDocumentRequest
     [Required(ErrorMessage = "Document is required")]
     public IFormFile Document { get; set; } = default!;
 }
+

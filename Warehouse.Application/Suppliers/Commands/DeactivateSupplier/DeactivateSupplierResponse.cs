@@ -8,3 +8,4 @@ public class DeactivateSupplierResponse
 
     public bool IsActive { get; set; }
 }
+

@@ -8,3 +8,4 @@ public class AddProductImageResponse
 
     public string FilePath { get; set; } = string.Empty;
 }
+

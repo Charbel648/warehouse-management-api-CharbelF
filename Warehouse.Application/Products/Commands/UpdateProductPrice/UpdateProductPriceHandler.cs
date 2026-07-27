@@ -34,3 +34,4 @@ public class UpdateProductPriceHandler : IRequestHandler<UpdateProductPriceComma
         };
     }
 }
+

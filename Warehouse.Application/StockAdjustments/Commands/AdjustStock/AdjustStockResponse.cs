@@ -16,3 +16,4 @@ public class AdjustStockResponse
 
     public DateTime UpdatedAt { get; set; }
 }
+

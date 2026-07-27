@@ -14,3 +14,4 @@ public class CreateSupplierResponse
 
     public bool IsActive { get; set; }
 }
+

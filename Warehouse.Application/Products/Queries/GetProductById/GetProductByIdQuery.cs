@@ -7,3 +7,4 @@ public class GetProductByIdQuery : IRequest<ProductViewModel?>
 {
     public string ProductId { get; set; } = string.Empty;
 }
+

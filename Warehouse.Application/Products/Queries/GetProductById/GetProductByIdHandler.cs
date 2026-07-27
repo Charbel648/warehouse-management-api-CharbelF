@@ -30,3 +30,4 @@ public class GetProductByIdHandler : IRequestHandler<GetProductByIdQuery, Produc
         return _mapper.Map<ProductViewModel>(product);
     }
 }
+

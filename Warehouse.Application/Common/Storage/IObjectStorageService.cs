@@ -15,3 +15,4 @@ public interface IObjectStorageService
         string contentType,
         CancellationToken cancellationToken);
 }
+

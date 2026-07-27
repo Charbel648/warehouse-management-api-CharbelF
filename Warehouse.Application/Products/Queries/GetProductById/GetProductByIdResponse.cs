@@ -26,3 +26,4 @@ public class GetProductByIdResponse
 
     public DateTime LastUpdatedAt { get; set; }
 }
+

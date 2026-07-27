@@ -34,3 +34,4 @@ public class ArchiveProductHandler : IRequestHandler<ArchiveProductCommand, Arch
         };
     }
 }
+

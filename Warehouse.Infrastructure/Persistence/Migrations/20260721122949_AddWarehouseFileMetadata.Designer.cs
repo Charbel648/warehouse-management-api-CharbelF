@@ -338,3 +338,4 @@ namespace Warehouse.Infrastructure.Persistence.Migrations
         }
     }
 }
+

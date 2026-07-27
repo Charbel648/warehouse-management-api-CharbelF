@@ -44,3 +44,4 @@ public class AssignSupplierToProductHandler : IRequestHandler<AssignSupplierToPr
         };
     }
 }
+

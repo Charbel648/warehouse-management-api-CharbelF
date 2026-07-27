@@ -124,3 +124,4 @@ public class Product
             throw new InvalidOperationException("Archived products cannot be updated");
     }
 }
+

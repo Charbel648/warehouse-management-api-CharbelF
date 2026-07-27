@@ -33,3 +33,4 @@ public class DeactivateSupplierHandler : IRequestHandler<DeactivateSupplierComma
         };
     }
 }
+

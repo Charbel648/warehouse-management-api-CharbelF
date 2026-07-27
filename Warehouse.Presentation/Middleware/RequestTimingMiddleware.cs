@@ -38,3 +38,4 @@ public class RequestTimingMiddleware
             context.TraceIdentifier);
     }
 }
+

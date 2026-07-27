@@ -10,3 +10,4 @@ public class ArchiveProductResponse
 
     public DateTime LastUpdatedAt { get; set; }
 }
+

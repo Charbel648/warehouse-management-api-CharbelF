@@ -7,3 +7,4 @@ public class DownloadWarehouseFileQuery : IRequest<StoredObjectDownloadResult>
 {
     public string FileId { get; set; } = string.Empty;
 }
+

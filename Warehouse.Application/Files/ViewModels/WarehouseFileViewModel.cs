@@ -18,3 +18,4 @@ public class WarehouseFileViewModel
 
     public DateTime UploadedAt { get; set; }
 }
+

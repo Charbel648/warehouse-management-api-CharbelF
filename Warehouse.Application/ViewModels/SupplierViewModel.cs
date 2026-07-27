@@ -16,3 +16,4 @@ public class SupplierViewModel
 
     public int ProductCount { get; set; }
 }
+

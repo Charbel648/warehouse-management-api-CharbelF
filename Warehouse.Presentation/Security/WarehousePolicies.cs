@@ -13,3 +13,4 @@ public static class WarehouseRoles
 
     public const string User = "user";
 }
+
