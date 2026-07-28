@@ -1,4 +1,5 @@
-﻿using AutoMapper;
+﻿using Warehouse.Application.Common.Messaging;
+using AutoMapper;
 using FluentAssertions;
 using Moq;
 using Warehouse.Api.UnitTests.Builders;
@@ -16,6 +17,17 @@ namespace Warehouse.Api.UnitTests.Products;
 public class ProductHandlerTests
 {
     private readonly Mock<IProductRepository> _productRepositoryMock = new();
+    private readonly Mock<IWarehouseEventPublisher> _warehouseEventPublisherMock = new();
+
+    public ProductHandlerTests()
+    {
+        _warehouseEventPublisherMock
+            .Setup(publisher => publisher.PublishAsync(
+                It.IsAny<WarehouseNotificationEvent>(),
+                It.IsAny<string>(),
+                It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+    }
 
     [Fact]
     public async Task CreateProduct_WithValidProduct_ShouldSucceed()
@@ -249,7 +261,7 @@ public class ProductHandlerTests
             .Setup(repository => repository.GetByIdAsync(product.Id))
             .ReturnsAsync(product);
 
-        var handler = new UpdateProductQuantityHandler(_productRepositoryMock.Object);
+        var handler = new UpdateProductQuantityHandler(_productRepositoryMock.Object, _warehouseEventPublisherMock.Object);
 
         var result = await handler.Handle(
             new UpdateProductQuantityCommand
@@ -273,7 +285,7 @@ public class ProductHandlerTests
             .Setup(repository => repository.GetByIdAsync(product.Id))
             .ReturnsAsync(product);
 
-        var handler = new UpdateProductQuantityHandler(_productRepositoryMock.Object);
+        var handler = new UpdateProductQuantityHandler(_productRepositoryMock.Object, _warehouseEventPublisherMock.Object);
 
         Func<Task> act = async () => await handler.Handle(
             new UpdateProductQuantityCommand
@@ -298,7 +310,7 @@ public class ProductHandlerTests
             .Setup(repository => repository.GetByIdAsync(product.Id))
             .ReturnsAsync(product);
 
-        var handler = new UpdateProductQuantityHandler(_productRepositoryMock.Object);
+        var handler = new UpdateProductQuantityHandler(_productRepositoryMock.Object, _warehouseEventPublisherMock.Object);
 
         var result = await handler.Handle(
             new UpdateProductQuantityCommand
@@ -378,3 +390,5 @@ public class ProductHandlerTests
         _productRepositoryMock.Verify(repository => repository.UpdateAsync(product), Times.Once);
     }
 }
+
+
