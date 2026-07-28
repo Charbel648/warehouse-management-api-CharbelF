@@ -1,4 +1,5 @@
-﻿using System.Text.Json;
+﻿using Warehouse.Presentation.Middleware;
+using System.Text.Json;
 using System.Security.Cryptography.X509Certificates;
 using Microsoft.OpenApi.Models;
 using Microsoft.IdentityModel.Tokens;
@@ -22,6 +23,8 @@ using Warehouse.Infrastructure.Persistence;
 using Warehouse.Infrastructure.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddLocalization();
 
 JwtSecurityTokenHandler.DefaultMapInboundClaims = false;
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
@@ -211,6 +214,8 @@ builder.Services.AddSwaggerGen(options =>
 });
 var app = builder.Build();
 
+app.UseMiddleware<ExceptionHandlingMiddleware>();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
@@ -224,4 +229,6 @@ app.MapControllers();
 app.Run();
 
 public partial class Program { }
+
+
 

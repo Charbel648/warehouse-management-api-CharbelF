@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication;
+﻿using Warehouse.Domain.Repositories;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -45,6 +46,15 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
         builder.ConfigureTestServices(services =>
         {
+
+            services.RemoveAll<IProductRepository>();
+            services.RemoveAll<ISupplierRepository>();
+            services.RemoveAll<IWarehouseFileRepository>();
+
+            services.AddSingleton<TestWarehouseStore>();
+            services.AddScoped<IProductRepository, TestProductRepository>();
+            services.AddScoped<ISupplierRepository, TestSupplierRepository>();
+            services.AddScoped<IWarehouseFileRepository, TestWarehouseFileRepository>();
             services.RemoveAll<IDistributedCache>();
             services.AddDistributedMemoryCache();
 
@@ -70,3 +80,4 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
         });
     }
 }
+

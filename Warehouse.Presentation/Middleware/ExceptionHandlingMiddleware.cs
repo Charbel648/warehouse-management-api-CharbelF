@@ -65,6 +65,11 @@ public class ExceptionHandlingMiddleware
                 message = businessRuleException.Message;
                 break;
 
+            case InvalidOperationException:
+                statusCode = StatusCodes.Status409Conflict;
+                errorCode = "conflict";
+                message = exception.Message;
+                break;
             case ValidationException:
                 statusCode = StatusCodes.Status400BadRequest;
                 errorCode = "validation_error";
@@ -91,4 +96,5 @@ public class ExceptionHandlingMiddleware
         await context.Response.WriteAsJsonAsync(response);
     }
 }
+
 
