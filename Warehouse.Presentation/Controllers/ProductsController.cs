@@ -8,6 +8,7 @@ using Warehouse.Application.Products.Commands.AssignSupplierToProduct;
 using Warehouse.Application.Products.Commands.CreateProduct;
 using Warehouse.Application.Products.Commands.UpdateProductPrice;
 using Warehouse.Application.Products.Commands.UpdateProductQuantity;
+using Warehouse.Application.Products.Queries.GetExpiringSoonProducts;
 using Warehouse.Application.Products.Queries.GetProductById;
 using Warehouse.Application.Products.Queries.ListProducts;
 using Warehouse.Application.Products.Queries.SearchProducts;
@@ -42,6 +43,18 @@ public class ProductsController : ControllerBase
         return Ok(products);
     }
 
+
+    [Authorize(Policy = WarehousePolicies.WarehouseReader)]
+    [HttpGet("expiring-soon")]
+    public async Task<ActionResult> GetExpiringSoonProducts(
+        CancellationToken cancellationToken)
+    {
+        var products = await _mediator.Send(
+            new GetExpiringSoonProductsQuery(),
+            cancellationToken);
+
+        return Ok(products);
+    }
     [Authorize(Policy = WarehousePolicies.WarehouseReader)]
     [HttpGet("{id:guid}")]
     public async Task<ActionResult> GetProduct(
@@ -225,4 +238,5 @@ public class ProductsController : ControllerBase
         return Ok(response);
     }
 }
+
 
