@@ -10,3 +10,4 @@ public interface IProductReportRepository
 
     Task<List<Product>> GetPagedProductsAsync(int pageNumber, int pageSize);
 }
+

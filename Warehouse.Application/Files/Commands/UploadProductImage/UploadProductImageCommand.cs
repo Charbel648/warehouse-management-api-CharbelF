@@ -15,3 +15,4 @@ public class UploadProductImageCommand : IRequest<WarehouseFileViewModel>
 
     public long SizeInBytes { get; set; }
 }
+

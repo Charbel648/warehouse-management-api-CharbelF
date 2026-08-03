@@ -50,3 +50,4 @@ public class CreateProductHandler : IRequestHandler<CreateProductCommand, Create
         };
     }
 }
+

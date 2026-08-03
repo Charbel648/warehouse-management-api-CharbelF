@@ -44,3 +44,4 @@ public class Supplier
         IsActive = false;
     }
 }
+

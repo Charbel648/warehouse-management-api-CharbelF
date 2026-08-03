@@ -54,3 +54,4 @@ public class AdjustStockCommandHandler : IRequestHandler<AdjustStockCommand, Adj
         };
     }
 }
+

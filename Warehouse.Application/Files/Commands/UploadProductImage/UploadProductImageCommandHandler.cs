@@ -1,4 +1,5 @@
-﻿using MediatR;
+﻿using Warehouse.Application.Common.Messaging;
+using MediatR;
 using Warehouse.Application.Common.Auth;
 using Warehouse.Application.Common.Storage;
 using Warehouse.Application.Files.ViewModels;
@@ -21,6 +22,7 @@ public class UploadProductImageCommandHandler
 
     private readonly IProductRepository _productRepository;
     private readonly IWarehouseFileRepository _warehouseFileRepository;
+    private readonly IWarehouseEventPublisher _warehouseEventPublisher;
     private readonly IObjectStorageService _objectStorageService;
     private readonly ICurrentUserService _currentUserService;
 
@@ -28,10 +30,12 @@ public class UploadProductImageCommandHandler
         IProductRepository productRepository,
         IWarehouseFileRepository warehouseFileRepository,
         IObjectStorageService objectStorageService,
-        ICurrentUserService currentUserService)
+        ICurrentUserService currentUserService,
+        IWarehouseEventPublisher warehouseEventPublisher)
     {
         _productRepository = productRepository;
         _warehouseFileRepository = warehouseFileRepository;
+        _warehouseEventPublisher = warehouseEventPublisher;
         _objectStorageService = objectStorageService;
         _currentUserService = currentUserService;
     }
@@ -69,6 +73,24 @@ public class UploadProductImageCommandHandler
 
         await _warehouseFileRepository.AddAsync(file, cancellationToken);
 
+        
+        await _warehouseEventPublisher.PublishAsync(
+            new WarehouseNotificationEvent
+            {
+                EventId = Guid.NewGuid().ToString(),
+                EventTimeUtc = DateTime.UtcNow,
+                EventType = "WarehouseFileUploaded",
+                CorrelationId = Guid.NewGuid().ToString(),
+                RelatedEntityId = file.RelatedEntityId,
+                RelatedEntityType = file.RelatedEntityType,
+                Severity = "Information",
+                FileId = file.FileId,
+                FileName = file.OriginalFileName,
+                FileCategory = file.FileCategory,
+                UploadedByFirebaseUid = _currentUserService.FirebaseUid
+            },
+            "file.uploaded",
+            cancellationToken);
         return ToViewModel(file);
     }
 
@@ -91,7 +113,7 @@ public class UploadProductImageCommandHandler
 
     private static WarehouseFileViewModel ToViewModel(WarehouseFile file)
     {
-        return new WarehouseFileViewModel
+return new WarehouseFileViewModel
         {
             FileId = file.FileId,
             RelatedEntityId = file.RelatedEntityId,
@@ -104,3 +126,7 @@ public class UploadProductImageCommandHandler
         };
     }
 }
+
+
+
+

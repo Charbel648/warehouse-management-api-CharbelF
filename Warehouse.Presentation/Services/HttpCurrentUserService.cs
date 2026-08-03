@@ -31,3 +31,4 @@ public class HttpCurrentUserService : ICurrentUserService
     public string? Role =>
         _httpContextAccessor.HttpContext?.User.FindFirstValue("role");
 }
+

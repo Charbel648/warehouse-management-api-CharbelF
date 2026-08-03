@@ -10,3 +10,4 @@ public class AddProductImageCommand : IRequest<AddProductImageResponse?>
 
     public string FilePath { get; set; } = string.Empty;
 }
+

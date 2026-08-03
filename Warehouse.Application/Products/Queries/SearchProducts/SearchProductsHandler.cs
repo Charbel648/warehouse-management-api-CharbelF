@@ -30,3 +30,4 @@ public class SearchProductsHandler : IRequestHandler<SearchProductsQuery, List<P
         return _mapper.Map<List<ProductViewModel>>(products);
     }
 }
+

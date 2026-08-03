@@ -8,3 +8,4 @@ public class AssignSupplierToProductCommand : IRequest<AssignSupplierToProductRe
 
     public string SupplierId { get; set; } = string.Empty;
 }
+

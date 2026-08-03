@@ -12,3 +12,4 @@ public class CreateSupplierCommand : IRequest<CreateSupplierResponse>
 
     public string PhoneNumber { get; set; } = string.Empty;
 }
+

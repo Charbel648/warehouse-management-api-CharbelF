@@ -27,3 +27,4 @@ public class ListSuppliersHandler : IRequestHandler<ListSuppliersQuery, List<Sup
         return _mapper.Map<List<SupplierViewModel>>(suppliers);
     }
 }
+

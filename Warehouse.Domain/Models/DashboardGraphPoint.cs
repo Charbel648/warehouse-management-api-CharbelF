@@ -6,3 +6,4 @@ public class DashboardGraphPoint
 
     public int Value { get; set; }
 }
+

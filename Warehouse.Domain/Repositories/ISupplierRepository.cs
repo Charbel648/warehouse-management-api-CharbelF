@@ -14,3 +14,4 @@ public interface ISupplierRepository
 
     Task<bool> EmailExistsAsync(string contactEmail);
 }
+

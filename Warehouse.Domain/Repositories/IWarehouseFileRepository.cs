@@ -8,3 +8,4 @@ public interface IWarehouseFileRepository
 
     Task<WarehouseFile?> GetByIdAsync(string fileId, CancellationToken cancellationToken);
 }
+

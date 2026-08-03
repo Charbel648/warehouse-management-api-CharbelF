@@ -28,3 +28,4 @@ public class ProductViewModel
 
     public List<string> ImageUrls { get; set; } = new();
 }
+

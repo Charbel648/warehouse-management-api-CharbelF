@@ -10,3 +10,4 @@ public interface IInventoryDashboardRepository
 
     Task<List<DashboardGraphPoint>> GetSuppliersByCountryGraphAsync(CancellationToken cancellationToken);
 }
+

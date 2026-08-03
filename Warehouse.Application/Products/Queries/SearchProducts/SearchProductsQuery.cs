@@ -9,3 +9,4 @@ public class SearchProductsQuery : IRequest<List<ProductViewModel>>
 
     public string? Supplier { get; set; }
 }
+

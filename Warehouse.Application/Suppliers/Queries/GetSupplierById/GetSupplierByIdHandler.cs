@@ -30,3 +30,4 @@ public class GetSupplierByIdHandler : IRequestHandler<GetSupplierByIdQuery, Supp
         return _mapper.Map<SupplierViewModel>(supplier);
     }
 }
+

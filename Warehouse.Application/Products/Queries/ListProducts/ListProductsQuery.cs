@@ -7,3 +7,4 @@ public class ListProductsQuery : IRequest<List<ProductViewModel>>
 {
     public bool OnlyAvailable { get; set; }
 }
+

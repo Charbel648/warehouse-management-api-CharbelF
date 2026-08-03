@@ -12,3 +12,4 @@ public partial class SharedResources
 
     public const string InvalidRequest = "InvalidRequest";
 }
+

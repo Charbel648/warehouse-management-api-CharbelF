@@ -10,3 +10,4 @@ public class UpdateProductPriceResponse
 
     public DateTime LastUpdatedAt { get; set; }
 }
+

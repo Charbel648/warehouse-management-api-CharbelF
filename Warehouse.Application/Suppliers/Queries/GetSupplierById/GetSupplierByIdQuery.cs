@@ -7,3 +7,4 @@ public class GetSupplierByIdQuery : IRequest<SupplierViewModel?>
 {
     public string SupplierId { get; set; } = string.Empty;
 }
+

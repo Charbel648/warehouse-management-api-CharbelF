@@ -14,3 +14,4 @@ public class GetSupplierByIdResponse
 
     public bool IsActive { get; set; }
 }
+
