@@ -1,0 +1,15 @@
+﻿**/bin/
+**/obj/
+**/.vs/
+**/.idea/
+**/node_modules/
+.git/
+.gitignore
+Dockerfile*
+docker-compose*.yml
+README.md
+*.user
+*.suo
+*.log
+.env
+firebase-tools/node_modules/

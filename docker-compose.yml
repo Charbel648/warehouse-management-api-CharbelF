@@ -1,0 +1,107 @@
+﻿services:
+  warehouse-api:
+    build:
+      context: .
+      dockerfile: Warehouse.Presentation/Dockerfile
+    image: warehouse-api:dev
+    container_name: warehouse-api
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      ConnectionStrings__Redis: redis:6379
+      Redis__ConnectionString: redis:6379
+
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: warehouse
+      RabbitMq__Username: warehouse
+      RabbitMq__Password: warehouse
+
+      Minio__Endpoint: minio:9000
+      Minio__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
+      Minio__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      Minio__BucketName: warehouse-files
+      Minio__UseSSL: false
+
+      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-service-account.json
+    volumes:
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
+    depends_on:
+      - redis
+      - minio
+      - rabbitmq
+    networks:
+      - warehouse-network
+
+  warehouse-notifications-api:
+    build:
+      context: .
+      dockerfile: Warehouse.Notifications/Warehouse.Notifications.Api/Dockerfile
+    image: warehouse-notifications-api:dev
+    container_name: warehouse-notifications-api
+    ports:
+      - "8081:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: warehouse
+      RabbitMq__Username: warehouse
+      RabbitMq__Password: warehouse
+    depends_on:
+      - rabbitmq
+    networks:
+      - warehouse-network
+
+  redis:
+    image: redis:7
+    container_name: warehouse-redis
+    ports:
+      - "6379:6379"
+    networks:
+      - warehouse-network
+
+  minio:
+    image: minio/minio
+    container_name: warehouse-minio
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+    volumes:
+      - warehouse_minio_data:/data
+    command: server /data --console-address ":9001"
+    networks:
+      - warehouse-network
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: warehouse-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: warehouse
+      RABBITMQ_DEFAULT_PASS: warehouse
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - warehouse-network
+
+volumes:
+  warehouse_minio_data:
+  rabbitmq_data:
+
+networks:
+  warehouse-network:
+    name: warehouse-network
+    driver: bridge
