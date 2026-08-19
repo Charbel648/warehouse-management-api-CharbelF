@@ -17,6 +17,7 @@ public class ProductRepository : IProductRepository
     public async Task<List<Product>> GetAllAsync()
     {
         return await _context.Products
+            .AsNoTracking()
             .ToListAsync();
     }
 
@@ -29,7 +30,8 @@ public class ProductRepository : IProductRepository
 
     public async Task<List<Product>> SearchAsync(string? name, string? supplier)
     {
-        IQueryable<Product> query = _context.Products;
+        IQueryable<Product> query = _context.Products
+            .AsNoTracking();
 
         if (!string.IsNullOrWhiteSpace(name))
         {
@@ -61,6 +63,7 @@ public class ProductRepository : IProductRepository
     public async Task<bool> SkuExistsAsync(string sku)
     {
         return await _context.Products
+            .AsNoTracking()
             .AnyAsync(p => EF.Functions.ILike(p.SKU, sku));
     }
 
@@ -70,11 +73,12 @@ public class ProductRepository : IProductRepository
         CancellationToken cancellationToken)
     {
         return await _context.Products
+            .AsNoTracking()
             .Where(product =>
                 !product.IsArchived
+                && product.ExpiryDate >= currentDate
                 && product.ExpiryDate <= expiringLimitDate)
             .OrderBy(product => product.ExpiryDate)
             .ToListAsync(cancellationToken);
     }
 }
-

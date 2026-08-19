@@ -66,9 +66,14 @@ public class TestProductRepository : IProductRepository
         CancellationToken cancellationToken)
     {
         var products = _store.Products
-            .Where(product => product.ExpiryDate <= expiringLimitDate)
+            .Where(product =>
+                !product.IsArchived
+                && product.ExpiryDate >= currentDate
+                && product.ExpiryDate <= expiringLimitDate)
+            .OrderBy(product => product.ExpiryDate)
             .ToList();
 
         return Task.FromResult(products);
     }
 }
+

@@ -42,6 +42,12 @@ public class ProductBuilder
         return this;
     }
 
+
+    public ProductBuilder WithExpiryDate(DateTime expiryDate)
+    {
+        _expiryDate = expiryDate;
+        return this;
+    }
     public Product Build()
     {
         return new Product(
@@ -55,3 +61,4 @@ public class ProductBuilder
         );
     }
 }
+
