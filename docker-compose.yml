@@ -1,0 +1,198 @@
+﻿services:
+
+  # =========================================================
+  # MAIN WAREHOUSE API
+  # =========================================================
+  warehouse-api:
+    build:
+      context: .
+      dockerfile: Warehouse.Presentation/Dockerfile
+
+    image: warehouse-api:dev
+    container_name: warehouse-api
+
+    ports:
+      - "8080:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      # PostgreSQL
+      ConnectionStrings__DefaultConnection: Host=postgres;Port=5432;Database=${POSTGRES_DB:-warehouse};Username=${POSTGRES_USER:-warehouse};Password=${POSTGRES_PASSWORD:-warehouse}
+
+      # Redis
+      ConnectionStrings__Redis: redis:6379
+      Redis__ConnectionString: redis:6379
+
+      # RabbitMQ
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: warehouse
+      RabbitMq__Username: warehouse
+      RabbitMq__Password: warehouse
+
+      # MinIO
+      Minio__Endpoint: minio:9000
+      Minio__AccessKey: ${MINIO_ROOT_USER:-minioadmin}
+      Minio__SecretKey: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+      Minio__BucketName: warehouse-files
+      Minio__UseSSL: false
+
+      # Firebase
+      GOOGLE_APPLICATION_CREDENTIALS: /app/firebase-service-account.json
+
+    volumes:
+      - ./firebase-service-account.json:/app/firebase-service-account.json:ro
+
+    depends_on:
+      - postgres
+      - redis
+      - rabbitmq
+      - minio
+
+    networks:
+      - backend-network
+      - database-network
+      - messaging-network
+      - storage-network
+
+
+  # =========================================================
+  # NOTIFICATIONS API
+  # =========================================================
+  warehouse-notifications-api:
+    build:
+      context: .
+      dockerfile: Warehouse.Notifications/Warehouse.Notifications.Api/Dockerfile
+
+    image: warehouse-notifications-api:dev
+    container_name: warehouse-notifications-api
+
+    ports:
+      - "8081:8080"
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+
+      # RabbitMQ
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__Host: rabbitmq
+      RabbitMq__Port: 5672
+      RabbitMq__UserName: warehouse
+      RabbitMq__Username: warehouse
+      RabbitMq__Password: warehouse
+
+    depends_on:
+      - rabbitmq
+
+    networks:
+      - messaging-network
+
+
+  # =========================================================
+  # POSTGRESQL DATABASE
+  # =========================================================
+  postgres:
+    image: postgres:16
+    container_name: warehouse-postgres
+
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-warehouse}
+      POSTGRES_USER: ${POSTGRES_USER:-warehouse}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-warehouse}
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    networks:
+      - database-network
+
+
+  # =========================================================
+  # REDIS CACHE
+  # =========================================================
+  redis:
+    image: redis:7
+    container_name: warehouse-redis
+
+    networks:
+      - backend-network
+
+
+  # =========================================================
+  # RABBITMQ MESSAGE BROKER
+  # =========================================================
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: warehouse-rabbitmq
+
+    ports:
+      - "15672:15672"
+
+    environment:
+      RABBITMQ_DEFAULT_USER: warehouse
+      RABBITMQ_DEFAULT_PASS: warehouse
+
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+
+    networks:
+      - messaging-network
+
+
+  # =========================================================
+  # MINIO OBJECT STORAGE
+  # =========================================================
+  minio:
+    image: minio/minio
+    container_name: warehouse-minio
+
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-minioadmin}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-minioadmin123}
+
+    volumes:
+      - warehouse_minio_data:/data
+
+    command: server /data --console-address ":9001"
+
+    networks:
+      - storage-network
+
+
+# =========================================================
+# VOLUMES
+# =========================================================
+volumes:
+  postgres_data:
+  warehouse_minio_data:
+  rabbitmq_data:
+
+
+# =========================================================
+# NETWORKS
+# =========================================================
+networks:
+
+  backend-network:
+    name: warehouse-backend-network
+    driver: bridge
+
+  database-network:
+    name: warehouse-database-network
+    driver: bridge
+
+  messaging-network:
+    name: warehouse-messaging-network
+    driver: bridge
+
+  storage-network:
+    name: warehouse-storage-network
+    driver: bridge
